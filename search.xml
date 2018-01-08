@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title><![CDATA[如何全局监听ajax请求？]]></title>
+    <url>%2F2018%2F01%2F08%2F%E5%A6%82%E4%BD%95%E5%85%A8%E5%B1%80%E7%9B%91%E5%90%ACajax%E8%AF%B7%E6%B1%82%EF%BC%9F%2F</url>
+    <content type="text"><![CDATA[最近项目有这样一个需求：对页面所有ajax请求进行监听，当请求某些接口时，记录一次日志（包括请求的接口地址、参数等）。还好页面使用的是$.ajax()方法，这样我们可以使用$.ajaxSetup()方法对全局ajax方法进行统一配置。 对于jQuery.ajaxSetup()的解释： jQuery.ajaxSetup()于更改jQuery中AJAX请求的默认设置选项。之后执行的所有AJAX请求，如果对应的选项参数没有设置，将使用更改后的默认设置。 我们可以在这里设置beforeSend和complete属性。beforeSend用于ajax发出请求前执行业务逻辑；complete是在ajax发出请求后无论成功失败都会执行。 实现代码如下：123456789101112131415161718192021222324252627//需要监听的接请求地址var actions = [&apos;url_a&apos;,&apos;url_b&apos;];$.ajaxSetup(&#123; //ajax执行前 beforeSend: function(xhr) &#123; //当前请求地址 var targetUrl = this.url; var self = this; //判断是否是需要监听的请求地址，如果是，执行记录操作。 $.each(actions, function(idx, url) &#123; if (targetUrl.indexOf(url) != -1) &#123; //执行记录操作 dosomething(); &#125; &#125;); &#125;, //ajax执行后（无论success或error） complete: function(xhr) &#123; var targetUrl = this.url; var self = this; $.each(actions, function(idx, url) &#123; if (targetUrl.indexOf(url) != -1) &#123; dosomething(); &#125; &#125;); &#125;&#125;);]]></content>
+      <categories>
+        <category>js</category>
+      </categories>
+      <tags>
+        <tag>ajax</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Vert.x Web的简单使用]]></title>
+    <url>%2F2017%2F12%2F11%2FVert.x%20Web%E7%9A%84%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8%2F</url>
+    <content type="text"><![CDATA[使用 Vert.x Web在使用 Vert.x Web 之前，需要为您的构建工具在描述文件中添加依赖项： Maven（在 pom.xml 文件中）：12345&lt;dependency&gt; &lt;groupId&gt;io.vertx&lt;/groupId&gt; &lt;artifactId&gt;vertx-web&lt;/artifactId&gt; &lt;version&gt;3.4.2&lt;/version&gt;&lt;/dependency&gt; Gradle（在 build.gradle 文件中）：123dependencies &#123; compile &apos;io.vertx:vertx-web:3.4.2&apos;&#125; Vert.x Web 的基本概念Router 是 Vert.x Web 的核心概念之一。它是一个维护了零或多个 Route 的对象。Router 接收 HTTP 请求，并查找首个匹配该请求的 Route，然后将请求传递给这个 Route。Route 可以持有一个与之关联的处理器用于接收请求。您可以通过这个处理器对请求做一些事情，然后结束响应或者把请求传递给下一个匹配的处理器。以下是一个简单的路由示例：12345678910HttpServer server = vertx.createHttpServer();Router router = Router.router(vertx);router.route().handler(routingContext -&gt; &#123; // 所有的请求都会调用这个处理器处理 HttpServerResponse response = routingContext.response(); response.putHeader(&quot;content-type&quot;, &quot;text/plain&quot;); // 写入响应并结束处理 response.end(&quot;Hello World from Vert.x-Web!&quot;);&#125;);server.requestHandler(router::accept).listen(8080); 它做了和上文使用 Vert.x Core 实现的 HTTP 服务器基本相同的事情，只是这一次换成了 Vert.x Web。和上文一样，我们创建了一个 HTTP 服务器，然后创建了一个 Router。在这之后，我们创建了一个没有匹配条件的 Route，这个 route 会匹配所有到达这个服务器的请求。之后，我们为这个 route 指定了一个处理器，所有的请求都会调用这个处理器处理。调用处理器的参数是一个 RoutingContext 对象。它不仅包含了 Vert.x 中标准的 HttpServerRequest 和 HttpServerResponse，还包含了各种用于简化 Vert.x Web 使用的东西。每一个被路由的请求对应一个唯一的 RoutingContext，这个实例会被传递到所有处理这个请求的处理器上。当我们创建了处理器之后，我们设置了 HTTP 服务器的请求处理器，使所有的请求都通过 accept(3)处理。这些是最基本的，下面我们来看一下更多的细节： 处理请求并调用下一个处理器当 Vert.x Web 决定路由一个请求到匹配的 route 上，它会使用一个 RoutingContext 调用对应处理器。如果您不在处理器里结束这个响应，您需要调用 next 方法让其他匹配的 Route 来处理请求（如果有）。您不需要在处理器执行完毕时调用 next 方法。您可以在之后您需要的时间点调用它：123456789101112131415161718192021Route route1 = router.route(&quot;/some/path/&quot;).handler(routingContext -&gt; &#123; HttpServerResponse response = routingContext.response(); // 由于我们会在不同的处理器里写入响应，因此需要启用分块传输 // 仅当需要通过多个处理器输出响应时才需要 response.setChunked(true); response.write(&quot;route1\n&quot;); // 5 秒后调用下一个处理器 routingContext.vertx().setTimer(5000, tid -&gt; routingContext.next());&#125;);Route route2 = router.route(&quot;/some/path/&quot;).handler(routingContext -&gt; &#123; HttpServerResponse response = routingContext.response(); response.write(&quot;route2\n&quot;); // 5 秒后调用下一个处理器 routingContext.vertx().setTimer(5000, tid -&gt; routingContext.next());&#125;);Route route3 = router.route(&quot;/some/path/&quot;).handler(routingContext -&gt; &#123; HttpServerResponse response = routingContext.response(); response.write(&quot;route3&quot;); // 结束响应 routingContext.response().end();&#125;); 在上述的例子中，route1 向响应里写入了数据，5秒之后 route2 向响应里写入了数据，再5秒之后 route3 向响应里写入了数据并结束了响应。 注意，所有发生的这些没有线程阻塞。]]></content>
+      <categories>
+        <category>java</category>
+      </categories>
+      <tags>
+        <tag>vert.x</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[我的sublime插件]]></title>
+    <url>%2F2016%2F06%2F25%2F%E6%88%91%E7%9A%84sublime%E6%8F%92%E4%BB%B6%2F</url>
+    <content type="text"><![CDATA[首先安装Package Control组件 按Ctrl+`调出console 粘贴以下代码到底部命令行并回车：1import urllib.request,os; pf = &apos;Package Control.sublime-package&apos;; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); open(os.path.join(ipp, pf), &apos;wb&apos;).write(urllib.request.urlopen( &apos;http://sublime.wbond.net/&apos; + pf.replace(&apos; &apos;,&apos;%20&apos;)).read()) 重启Sublime Text 3 然后我们就可以安装插件了： 按下Ctrl+Shift+P调出命令面板 输入pcip 调出 Package control : Install Package 选项并回车，然后在列表中选中要安装的插件。 我安装的插件： theme-Soda: 一个不错的主题。 Evernote：印象笔记的插件，支持markdown格式。 jsFormat：js格式化工具。 Markdown Preview：写markdown可以在浏览器预览一下。 BracketHighlighter：语法高亮插件。 Pretty Json:格式化Json文本。]]></content>
+      <categories>
+        <category>sublime</category>
+      </categories>
+      <tags>
+        <tag>sublime</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[jquery的scroll函数IE下失灵的问题]]></title>
+    <url>%2F2016%2F06%2F24%2Fjquery%E7%9A%84scroll%E5%87%BD%E6%95%B0IE%E4%B8%8B%E5%A4%B1%E7%81%B5%E7%9A%84%E9%97%AE%E9%A2%98%2F</url>
+    <content type="text"><![CDATA[$(document).scroll();在IE浏览器下有兼容问题，始终不生效。后来找到解决方案：$(window).scroll();替代即可。]]></content>
+      <categories>
+        <category>js</category>
+      </categories>
+      <tags>
+        <tag>jquery</tag>
+        <tag>ie</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Oracle中如何查看锁表和正在运行的sql]]></title>
+    <url>%2F2016%2F06%2F21%2FOracle%E4%B8%AD%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B%E9%94%81%E8%A1%A8%E5%92%8C%E6%AD%A3%E5%9C%A8%E8%BF%90%E8%A1%8C%E7%9A%84sql%2F</url>
+    <content type="text"><![CDATA[在使用Oracle的时候经常遇见锁表的情况，使用下面语句可以找到锁表的进程。1234567891011select oracle_username, object_name, machine, s.sid||&apos;,&apos;||s.serial# kill_no, d.SPID, s.osuser, s.SQL_EXEC_START from v$locked_object l, dba_objects o, v$session s, v$process d where l.object_id = o.object_id and l.session_id = s.sid and s.PADDR = d.ADDR; 然后找到你要杀掉的那条记录，我们要使用的是它的kill_no。1alter system kill session &apos;759,2165&apos;; 这里的759,2165就是你的kill_no。]]></content>
+      <categories>
+        <category>oracle</category>
+      </categories>
+      <tags>
+        <tag>oracle</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[在Github上搭建Hexo博客]]></title>
+    <url>%2F2016%2F06%2F16%2F%E5%9C%A8Github%E4%B8%8A%E6%90%AD%E5%BB%BAHexo%E5%8D%9A%E5%AE%A2%2F</url>
+    <content type="text"><![CDATA[Hexo出自台湾大学生 tommy351 之手，是一个基于 Node.js 的静态博客程序，其编译上百篇文字只需要几秒。hexo生成的静态网页可以直接放到GitHub Pages，BAE，SAE等平台上。 Hexo，这个逼格极高的程序猿写作方式，我喜欢。就连 Hexo 的发音都像是黑客哦！如果你跟我一样纠结哪里写博，那就来到GitHub吧，让我们一起hexo！Hexo绝对不会让你失望，相信很快hexo就会流行起来。 搭建过程你或许觉得有那么点小繁琐，但一旦搭建完成，写文章是极简单，极舒服的。 1.环境要求最好你的系统是Linux，这样可以省去一些麻烦。 1.1. 安装ssh、Git和Node.js1.2. 配置Github 新建github的博客仓库，仓库名必须为【your_user_name.github.io】 配置ssh,将本地的ssh key 关联到github 2. 安装Hexo2.1. 安装只需一条命令：1$ npm install -g hexo-cli 就这么简单，安装完成了。 2.2. 初始化123$ hexo init blog ##如果folder没有创建,则会帮你创建$ cd blog$ (sudo) npm install ##安装一些工具? 执行完会自动生成一些必要的文件 2.3. 启动服务这个时候可以启动服务了：1$ hexo s 在浏览器输入 http://localhost:4000/ 就可以看到博客了 3. 部署到Github部署本地hexo 与github关联 现在我们需要_config.yml文件，来建立关联，命令： 1vim _config.yml 修改如下： 1234deploy: type: git repo: &lt;你github的repository url&gt; branch: master 然后需要安装hexo-deployer-git插件，执行命令： 1npm install hexo-deployer-git --save 不出意外的话，安装完成，就可以往github上部署了： 1hexo d 然后再浏览器中输入http://your_user_name.github.io/就行了！ 注：每次部署的步骤，可按以下三步来进行。 123hexo cleanhexo generatehexo deploy 4. 常用命令一些常用命令： hexo new&quot;postName&quot; #新建文章 hexo new page&quot;pageName&quot; #新建页面 hexo generate #生成静态页面至public目录 hexo server #开启预览访问端口（默认端口4000，’ctrl + c’关闭server） hexo deploy #将.deploy目录部署到GitHub hexo help # 查看帮助 hexo version #查看Hexo的版本]]></content>
+      <categories>
+        <category>blog</category>
+      </categories>
+      <tags>
+        <tag>github</tag>
+        <tag>hexo</tag>
+      </tags>
+  </entry>
+</search>
