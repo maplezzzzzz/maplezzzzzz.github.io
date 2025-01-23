@@ -235,7 +235,7 @@ class GameState {
 
     createVictoryParticles() {
         const particles = [];
-        const imageTypes = ['head', 'body', 'tail', 'food'];
+        const imageTypes = ['head', 'body', 'tail', 'green'];
         for (let i = 0; i < 50; i++) {
             particles.push({
                 x: Math.random() * this.canvas.width,
@@ -253,7 +253,7 @@ class GameState {
 
     createGameOverParticles() {
         const particles = [];
-        const imageTypes = ['head', 'body', 'tail', 'food'];
+        const imageTypes = ['head', 'body', 'tail', 'green'];
         for (let i = 0; i < 30; i++) {
             particles.push({
                 x: Math.random() * this.canvas.width,
