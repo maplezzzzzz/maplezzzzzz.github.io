@@ -16,7 +16,7 @@ class Snake {
         this.direction = 'right';
         this.nextDirection = 'right';
         this.targetPosition = null;
-        this.segmentSpacing = 2;
+        this.segmentSpacing = 2.5;
         this.pathPoints = [];
         this.pathMaxLength = 500;
         this.updateInterval = 2;
@@ -97,7 +97,7 @@ class Snake {
 
             if (pathIndex < this.pathPoints.length) {
                 const targetPoint = this.pathPoints[pathIndex];
-                const segmentSpeed = speed * 1.5; // 调整跟随速度
+                const segmentSpeed = speed * 3; // 调整跟随速度
 
                 // 使用线性插值让片段移向目标位置
                 segment.x += (targetPoint.x - segment.x) * segmentSpeed;

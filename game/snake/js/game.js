@@ -87,10 +87,13 @@ class Game {
         // 键盘控制
         document.addEventListener('keydown', (e) => {
             switch (e.key) {
-                case 'ArrowUp': this.snake.nextDirection = 'up'; break;
-                case 'ArrowDown': this.snake.nextDirection = 'down'; break;
-                case 'ArrowLeft': this.snake.nextDirection = 'left'; break;
-                case 'ArrowRight': this.snake.nextDirection = 'right'; break;
+                case 'ArrowUp':
+                case 'ArrowDown':
+                case 'ArrowLeft':
+                case 'ArrowRight':
+                    e.preventDefault(); // 阻止方向键的默认滚动行为
+                    this.snake.nextDirection = e.key.toLowerCase().replace('arrow', ''); 
+                    break;
             }
         });
 
