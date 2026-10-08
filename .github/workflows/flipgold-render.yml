@@ -1,7 +1,7 @@
-name: Render Flipgold pixel previews
+name: Render Flipgold growth previews
 on:
   push:
-    branches: [flipgold-sprout-v5]
+    branches: [flipgold-growth-v6]
     paths: [flipgold/index.html, .github/flipgold-render.cjs, .github/workflows/flipgold-render.yml]
 permissions:
   contents: read
