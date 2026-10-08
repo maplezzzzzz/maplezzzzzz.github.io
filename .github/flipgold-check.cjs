@@ -22,7 +22,7 @@ const emitImage=name=>{const fs=require('fs'),p='game-previews/'+name+'.jpg';if(
   await p.touchscreen.tap(v.x,v.y);await p.waitForTimeout(160);
  };
  const snap=async(name,p=page)=>p.screenshot({path:'game-previews/'+name+'.jpg',type:'jpeg',quality:65});
- await open(page);assert.equal(await page.evaluate(()=>BUILD),'庭院奇遇 · 3.0');await snap('intro');await tap('start');
+ await open(page);assert.equal(await page.evaluate(()=>BUILD),'世界旅行 · 4.0');await snap('intro');await tap('start');
  let p=await page.evaluate(()=>{const p=pos(0);return{x:ox+p.x*scale,y:oy+p.y*scale};});
  await page.touchscreen.tap(p.x,p.y);await page.waitForTimeout(100);
  assert.equal(await page.evaluate(()=>town.s.manual),1);assert.ok(await page.evaluate(()=>flying.length&&floaters.length));
