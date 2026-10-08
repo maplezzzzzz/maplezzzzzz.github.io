@@ -339,6 +339,7 @@ Town.prototype.floorPoint=function(i,t=this.activeTime,air=true){
 };
 const v6Value=Town.prototype.value,v6Flip=Town.prototype.flip,v6Dig=Town.prototype.dig,v6Travel=Town.prototype.travel,v6Route=Town.prototype.startRoute,v6Finish=Town.prototype.finishRoute;
 Town.prototype.value=function(i){return Math.max(1,Math.floor(v6Value.call(this,i)*(1+(this.gearRank()-1)*.12)));};
+Town.prototype.offline=function(n){if(!this.s.pet||!Number.isFinite(n))return 0;const avg=this.s.coins.reduce((sum,k,i)=>sum+this.value(i),0)/this.s.coins.length,amount=this.gain(Math.floor(Math.min(7200,Math.max(0,n))/(PET_MS[this.s.pet]/1000)*avg*.5*(this.s.play.charm==='nest'?2:1)),true);if(worldOf(this).run)worldOf(this).run.start.total+=amount;return amount;};
 Town.prototype.targets=function(i){
  if(!this.s.coins[i])return[];const id=this.gearId(),rank=this.gearRank(),p=this.floorPoint(i,this.activeTime,false),ids=this.s.coins.map((_,j)=>j);
  const d=j=>{const a=this.floorPoint(j,this.activeTime,false);return Math.hypot((a.x-p.x)*302,(a.y-p.y)*132);};
@@ -356,7 +357,7 @@ Town.prototype.giveFragment=function(forced=null){
  const z=worldOf(this).zone,p=growthOf(this),pool=this.fragmentPool(z),legend=pool.find(k=>TYPES[k].rarity===3);let id=forced;
  if(!id){if(legend&&p.pity[z]>=39)id=legend;else{let pick=this.rng()*pool.reduce((sum,k)=>sum+[62,27,9,2][TYPES[k].rarity],0);id=pool[0];for(const k of pool){pick-=[62,27,9,2][TYPES[k].rarity];if(pick<0){id=k;break;}}}
  }
- p.fragments[id]=Math.min(1e10,(p.fragments[id]||0)+1);p.dry=0;if(TYPES[id].rarity===3)p.pity[z]=0;else p.pity[z]++;
+ p.fragments[id]=Math.min(1e10,(p.fragments[id]||0)+1);p.dry=0;if(!forced){if(TYPES[id].rarity===3)p.pity[z]=0;else p.pity[z]=Math.min(1e9,p.pity[z]+1);}
  return {id,count:p.fragments[id],need:TYPES[id].need,ready:p.fragments[id]>=TYPES[id].need};
 };
 Town.prototype.flip=function(i,t,source='hand',boost=1){
@@ -393,7 +394,7 @@ Town.prototype.startRoute=function(endless=false){
  return v6Route.call(this,endless);
 };
 Town.prototype.finishRoute=function(win){
- const repeat=worldOf(this).run?.repeat,z=worldOf(this).zone,out=v6Finish.call(this,win);if(out?.win){const p=growthOf(this);if(repeat)p.hunts[z]++;out.fragments=[this.giveFragment()];if(this.s.clock&&worldOf(this).wins%3===0)out.fragments.push(this.giveFragment('clock'));if(worldOf(this).journey>=1&&this.distinct()>=24&&worldOf(this).wins%4===0)out.fragments.push(this.giveFragment('unity'));}return out;
+ const repeat=worldOf(this).run?.repeat,z=worldOf(this).zone,out=v6Finish.call(this,win);if(out?.win){const p=growthOf(this);if(repeat)p.hunts[z]=Math.min(1e9,p.hunts[z]+1);out.fragments=[this.giveFragment()];if(this.s.clock&&worldOf(this).wins%3===0)out.fragments.push(this.giveFragment('clock'));if(worldOf(this).journey>=1&&this.distinct()>=24&&worldOf(this).wins%4===0)out.fragments.push(this.giveFragment('unity'));}return out;
 };
 const v6Goals=Town.prototype.goals;
 Town.prototype.goals=function(){const a=v6Goals.call(this);a[2].hint='拥有 3 枚硬币后 · 55 金币';a[3].hint='小铲子之后 · 180 金币';a[4].hint=this.s.dig?'回庭院点击土堆继续挖掘':'翻币 120 枚后 · 1200 金币 · +4 位置';a[5].hint='藏宝地 + 抛光 Lv.3 · 4200 金币';a[7].hint='去果园后，可把栗栗训练至 Lv.3';a[9].hint='第二处藏宝地 + 栗栗 Lv.3 · 分三段修复';return a;};
@@ -1188,7 +1189,7 @@ modalScreen=function(){
  const h=550,y=(H-h)/2;panel(22,y,346,h);
  text('给小镇画上颜色的人',195,y+36,21,C.ink,'center');
  pixel('treeFruit',83,y+111,80,80);hero(193,y+129,1.4);squirrel(279,y+124,1.3,uiTime*.008,1);
- wrap('Sprout Lands · Basic Pack\nCup Nooble\n场景、角色、动物与工具\n免费 Basic 版：仅限非商业项目\ncupnooble.itch.io/sprout-lands-asset-pack\n\nCoins & Gems & Chests & More\ngreatdocbrown · CC0\n金币、宝石、宝箱与奖励动画\ngreatdocbrown.itch.io/coins-gems-etc\n\n谢谢他们，让小镇有了颜色。',195,y+185,312,11,'#718270',23,'center');
+ wrap('Sprout Lands · Basic Pack\nCup Nooble\n场景、角色、动物与工具\n免费 Basic 版：仅限非商业项目\ncupnooble.itch.io/sprout-lands-asset-pack\n\nCoins & Gems & Chests & More\ngreatdocbrown · CC0\n金币、宝石、宝箱与奖励动画\ngreatdocbrown.itch.io/coins-gems-etc\n\n特殊纪念币：为本游戏生成的新设计。',195,y+185,312,11,'#718270',23,'center');
  button('creditsOK','带着这份颜色，继续',46,y+h-57,298,39,()=>{modal={kind:'settings',at:uiTime};},{green:true,size:13});
 };
 
@@ -1367,9 +1368,22 @@ modalScreen=function(){
    text('已拥有 '+count+' 枚 · 在庭院 '+town.s.coins.filter(k=>k===id).length+' 枚',195,y+309,11,'#78846d','center');
    if(id!=='copper'){meter(46,y+341,299,8,fr/r.need,'green');text('修复碎片 '+fr+'/'+r.need,195,y+368,13,'#68836a','center');button('mint-'+id,fr>=r.need?'修复这枚金币':'继续寻找碎片',45,y+h-111,144,38,()=>mintSpecial(id),{green:fr>=r.need,size:11});button('equipCoin','放入庭院',201,y+h-111,144,38,()=>{if(town.equipCoin(id)){save();modal=null;page='home';sfx('unlock');}else toast('没有备用金币，或正在远征中');},{green:count>town.s.coins.filter(k=>k===id).length,size:11});}
    button('coinDetailOK','回到图鉴',45,y+h-57,300,37,()=>{modal=null;},{size:13});
-  }else{wrap('已放入庭院，可以亲手翻动它。\n原有金币仍保存在收藏中。\n每次修复，都让庭院多一份故事。',195,y+266,296,13,'#6d846d',24,'center');button('newCoinOK','翻翻这枚新金币',45,y+h-66,300,43,()=>{modal=null;page='home';},{green:true,size:14});}
+  }else{wrap('已放入庭院，可以亲手翻动它。\n庭院满时，会换下收益较低的一枚。
+换下的金币仍保存在收藏中。\n每次修复，都让庭院多一份故事。',195,y+266,296,13,'#6d846d',24,'center');button('newCoinOK','翻翻这枚新金币',45,y+h-66,300,43,()=>{modal=null;page='home';},{green:true,size:14});}
  }
 };
+
+
+const v6WorldShop=shop;
+shop=function(){
+ if(shopTab!=='relics'){v6WorldShop();return;}
+ const {y,h}=sheet('旅行发明的路线图','每个区域一件新发明 · 地图进度、抛光和熟练度逐步开放');
+ [['tools','基础工具'],['explore','藏宝与钟楼'],['ranks','熟练度']].forEach(([tab,label],i)=>button('relic-tab-'+tab,label,27+i*115,y+69,107,40,()=>{shopTab=tab;scroll=0;},{size:11,green:tab==='ranks'}));
+ const top=y+121,view=h-139,w=worldOf(town),p=growthOf(town);
+ scrollBody(top,view,RELICS.length*160,off=>RELICS.forEach((r,n)=>{const yy=off+n*160;if(yy+151<top||yy>top+view)return;const owned=w.owned.includes(r.id),why=town.requirement(r.id);panel(28,yy,334,150);icon(r.icon,60,yy+47,43);text(r.name+(owned?' · 熟练度 '+p.ranks[r.id]:''),95,yy+21,14,C.ink);wrap(r.desc,95,yy+47,243,10,'#73816e',18);wrap(owned?'拥有后可去“熟练度”继续升级':why||'已解锁 · 需要 '+short(r.cost)+' 金币',43,yy+93,291,11,'#71866f',18);wButton('world-tool-'+r.id,owned?w.equipped===r.id?'已装备':'装备':why?'查看解锁要求':'制作',239,yy+116,110,27,()=>owned?equipWorld(r.id):why?toast(why):buyWorldTool(r.id),{green:owned||!why&&town.s.gold>=r.cost,size:10});}));
+};
+buyWorldTool=function(id){if(!control())return;const r=RELICS.find(x=>x.id===id),why=town.requirement(id);if(!town.buyRelic(id)){toast(why||'制作还差 '+short(Math.max(0,r.cost-town.s.gold))+' 金币');return;}save();sfx('unlock');modal={kind:'worldUpgrade',id,at:uiTime};page='home';};
+travelZone=function(z){if(!control())return;const why=town.zoneRequirement(z),r=town.travel(z);if(!r){toast(worldOf(town).run?'先完成或退出这次远征':why||'旅费还差 '+short(Math.max(0,ZONES[z].cost-town.s.gold))+' 金币');return;}displayGold=town.s.gold;page='home';scroll=0;sfx('unlock');save();if(r.chapter!==undefined)chapterModal(r.chapter);else say('到达 '+ZONES[z].name+'！'+ZONES[z].effect);};
 
 requestAnimationFrame(frame);
 </script></body></html>
