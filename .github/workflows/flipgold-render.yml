@@ -1,7 +1,7 @@
-name: Render Flipgold world previews
+name: Render Flipgold pixel previews
 on:
   push:
-    branches: [flipgold-world-v4]
+    branches: [flipgold-sprout-v5]
     paths: [flipgold/index.html, .github/flipgold-render.cjs, .github/workflows/flipgold-render.yml]
 permissions:
   contents: read
