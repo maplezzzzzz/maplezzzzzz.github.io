@@ -399,6 +399,16 @@ Town.prototype.finishRoute=function(win){
 const v6Goals=Town.prototype.goals;
 Town.prototype.goals=function(){const a=v6Goals.call(this);a[2].hint='拥有 3 枚硬币后 · 55 金币';a[3].hint='小铲子之后 · 180 金币';a[4].hint=this.s.dig?'回庭院点击土堆继续挖掘':'翻币 120 枚后 · 1200 金币 · +4 位置';a[5].hint='藏宝地 + 抛光 Lv.3 · 4200 金币';a[7].hint='去果园后，可把栗栗训练至 Lv.3';a[9].hint='第二处藏宝地 + 栗栗 Lv.3 · 分三段修复';return a;};
 
+
+const v6RankSkill=Town.prototype.skill;
+Town.prototype.skill=function(t){
+ const hits=v6RankSkill.call(this,t);if(!hits.length)return hits;
+ const rank=this.gearRank();if(rank>=3)this.skillAt=t+(this.skillAt-t)*Math.max(.55,1-.045*(rank-1));
+ if(rank>=5&&this.s.land&&this.rng()<.12){const h=hits.find(x=>!x.fragment);if(h)h.fragment=this.giveFragment();}
+ if(rank>=8)this.feverUntil=Math.max(this.feverUntil,t+8000);
+ return hits;
+};
+
 const C={ink:'#4b6256',dark:'#3d564e',cream:'#fff8df',gold:'#f6c851',green:'#6b957b',green2:'#b4d59b',brown:'#b89a70',paper:'#fff4dc',shadow:'#583916',white:'#fff9dd'};
 function rr(x,y,w,h,r=14){r=Math.min(r,w/2,h/2);cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();}
 function box(x,y,w,h,fill,stroke=C.ink,r=14,lw=2){rr(x,y,w,h,r);cx.fillStyle=fill;cx.fill();if(stroke){cx.strokeStyle=stroke;cx.lineWidth=lw;cx.stroke();}}
@@ -1313,14 +1323,14 @@ const v6Nav=nav;
 nav=function(){v6Nav();const p=growthOf(town);if(Object.keys(p.fragments).some(k=>p.fragments[k]>=TYPES[k].need)){pixel('star',286,H-74,16,16);}};
 const v6PetPage=petPage;
 petPage=function(){v6PetPage();if(town.s.pet){const reason=town.requirement('pet');if(reason&&town.s.pet<15)text('下一次训练：'+reason,195,241,10,'#71856c','center');}};
-function upgradeGear(id){if(!control())return;if(!town.upgradeGear(id)){const c=town.gearCost(id);toast(town.gearRequirement(id)||(worldOf(town).gems<c.gems?'需要 '+c.gems+' 星砂，免费远征可获得':'还差 '+short(Math.max(0,c.gold-town.s.gold))+' 金币'));return;}save();sfx('unlock');burst(195,H*.5,28);modal={kind:'growthInfo',title:GEAR_NAMES[id]+' · 熟练度 '+growthOf(town).ranks[id],line:'收益提升，工具的翻动范围也会成长。\n下一阶段将在更远的区域开放。\n返回庭院，用新手感试一铲。',at:uiTime};}
+function upgradeGear(id){if(!control())return;if(!town.upgradeGear(id)){const c=town.gearCost(id);toast(town.gearRequirement(id)||(worldOf(town).gems<c.gems?'需要 '+c.gems+' 星砂，免费远征可获得':'还差 '+short(Math.max(0,c.gold-town.s.gold))+' 金币'));return;}save();sfx('unlock');burst(195,H*.5,28);modal={kind:'growthInfo',title:GEAR_NAMES[id]+' · 熟练度 '+growthOf(town).ranks[id],line:'范围与收益一起成长。\n3级：主动技能冷却缩短。\n5级：技能有机会额外找碎片。\n8级：技能唤来金币雨。\n下一阶段，会在更远的区域开放。',at:uiTime};}
 function equipGear(id){if(id==='shovel'||id==='wide'||id==='magnet'){if(worldOf(town).run){toast('远征结束后再换工具');return;}worldOf(town).equipped='base';town.s.tool={shovel:1,wide:2,magnet:3}[id];save();}else equipWorld(id);}
 const v6Shop=shop;
 shop=function(){
  if(shopTab==='ranks'){
   const {y,h}=sheet('工具熟练度','8 个阶段 · 收益、范围和旅途一起成长');button('shopTools','基础工具',28,y+68,107,40,()=>{shopTab='tools';scroll=0;},{size:11});button('shopRelics','旅行发明',142,y+68,107,40,()=>{shopTab='relics';scroll=0;},{size:11});button('shopRanks','熟练度',256,y+68,107,40,()=>{scroll=0;},{green:true,size:11});
   const owned=GEAR_IDS.filter(id=>growthOf(town).ranks[id]>0),top=y+120,view=h-139;
-  scrollBody(top,view,owned.length*141,off=>owned.forEach((id,n)=>{const yy=off+n*141;if(yy+133<top||yy>top+view)return;const rank=growthOf(town).ranks[id],c=town.gearCost(id),why=town.gearRequirement(id);panel(28,yy,334,132);icon(id,60,yy+44,43);text(GEAR_NAMES[id],96,yy+22,14,C.ink);text('熟练度 '+rank+'/8 · 收益 +'+((rank-1)*12)+'%',96,yy+45,11,'#70876f');wrap(why||'升级需 '+short(c.gold)+' 金币 + '+c.gems+' 星砂',96,yy+68,245,10,'#817f68',16);wButton('rank-'+id,rank===8?'已完成':why?'查看条件':'升级',242,yy+92,103,31,()=>upgradeGear(id),{green:!why&&town.s.gold>=c.gold&&worldOf(town).gems>=c.gems,enabled:rank<8,size:11});}));
+  scrollBody(top,view,owned.length*163,off=>owned.forEach((id,n)=>{const yy=off+n*163;if(yy+155<top||yy>top+view)return;const rank=growthOf(town).ranks[id],c=town.gearCost(id),why=town.gearRequirement(id);panel(28,yy,334,154);icon(id,60,yy+44,43);text(GEAR_NAMES[id],96,yy+22,14,C.ink);text('熟练度 '+rank+'/8 · 收益 +'+((rank-1)*12)+'%',96,yy+45,11,'#70876f');wrap(why||'升级需 '+short(c.gold)+' 金币 + '+c.gems+' 星砂',96,yy+68,245,10,'#817f68',16);text(gearMilestone(rank),43,yy+94,10,'#71866d');wButton('rank-'+id,rank===8?'已完成':why?'查看条件':'升级',242,yy+115,103,31,()=>upgradeGear(id),{green:!why&&town.s.gold>=c.gold&&worldOf(town).gems>=c.gems,enabled:rank<8,size:11});}));
   return;
  }
  v6Shop();const sy=H-108;button('openRanks','查看已拥有工具的熟练度与下一阶段',39,sy,312,22,()=>{shopTab='ranks';scroll=0;},{size:10,green:true});
@@ -1423,6 +1433,14 @@ function seekFragments(id){
  if(worldOf(town).run){openWorld('routes');return;}
  if(r.zone!==worldOf(town).zone){travelZone(r.zone);return;}
  openWorld('routes');toast(fragmentSource(id));
+}
+
+
+function gearMilestone(rank){
+ if(rank<3)return '3级起：技能冷却缩短';
+ if(rank<5)return '冷却 −'+Math.round(.045*(rank-1)*100)+'% · 5级：技能拾碎片';
+ if(rank<8)return '技能 12% 机会拾碎片 · 8级：唤来金币雨';
+ return '满级技能：唤来金币雨，继续成长收益';
 }
 
 requestAnimationFrame(frame);
