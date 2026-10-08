@@ -1,0 +1,26 @@
+const {chromium}=require('playwright');
+const fs=require('fs');fs.mkdirSync('world-previews',{recursive:true});
+const emit=name=>{const b=fs.readFileSync('world-previews/'+name+'.jpg').toString('base64');for(let i=0;i<b.length;i+=5000)console.log('WORLD_PREVIEW:'+name+':'+(i/5000)+':'+b.slice(i,i+5000));};
+(async()=>{
+ const browser=await chromium.launch({headless:true});
+ const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+ const p=await context.newPage();p.on('pageerror',e=>console.log('RENDER_ERROR:'+e.message));
+ await p.goto('http://127.0.0.1:4173/flipgold/',{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>assetsReady,{timeout:30000});
+ const snap=async n=>{await p.waitForTimeout(180);await p.screenshot({path:'world-previews/'+n+'.jpg',type:'jpeg',quality:76});emit(n);};
+ await snap('intro');
+ await p.evaluate(()=>{start();});await p.waitForTimeout(100);
+ await snap('first-garden');
+ await p.evaluate(()=>{town.s.coins=['copper','copper','clover','sun','royal','berry','river','crystal','frost','star'];town.s.tool=3;town.s.power=4;town.s.pet=3;town.s.land=3;town.s.clock=true;town.s.gold=500000;town.s.total=500000;town.s.play.charm='nest';town.s.play.nuts=15;const w=worldOf(town);w.unlocked=4;w.zone=3;w.gems=24;w.refine=3;w.clears=[8,8,8,3,0,0,0];w.owned=['rake','watering','drill'];w.equipped='drill';w.companions=['rabbit','fox'];w.companion='rabbit';dialogue=null;dialogueQueue=[];modal=null;cinema=null;displayGold=town.s.gold;town.shiny={i:7,start:time,until:time+5000};paused=true;});
+ await snap('crystal-garden');
+ await p.evaluate(()=>{page='map';mapTab='areas';scroll=0;});await snap('world-map');
+ await p.evaluate(()=>{mapTab='routes';scroll=0;});await snap('route-board');
+ await p.evaluate(()=>{mapTab='forge';scroll=0;});await snap('refinement');
+ await p.evaluate(()=>{page='tools';shopTab='relics';scroll=0;});await snap('new-equipment');
+ await p.evaluate(()=>{modal={kind:'companions',at:uiTime};});await snap('companions');
+ await p.evaluate(()=>{modal={kind:'travelStory',chapter:10,at:uiTime};});await snap('chapter');
+ await p.evaluate(()=>{modal=null;page='home';paused=false;town.startRoute();dialogue=null;});await snap('active-route');
+ await p.setViewportSize({width:360,height:640});await snap('phone360');
+ await p.evaluate(()=>{page='map';mapTab='forge';scroll=maxScroll;});await snap('phone-forge');
+ console.log('RENDER_COMPLETE:'+JSON.stringify(await p.evaluate(()=>({build:BUILD,assets:Object.keys(spriteFrames).length,saveAccepted:validV2(town.s),H,screenW,screenH,hits:hits.map(h=>h.id)}))));
+ await browser.close();
+})().catch(e=>{console.error(e);process.exit(1);});
