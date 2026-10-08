@@ -17,6 +17,7 @@ const emit=name=>{const b=fs.readFileSync('world-previews/'+name+'.jpg').toStrin
  await p.evaluate(()=>{modal=null;page='album';scroll=0;growthOf(town).fragments.honey=10;});await snap('collection');
  await p.evaluate(()=>{modal={kind:'coinDetail',id:'honey',at:uiTime};});await snap('coin-detail');
  await p.evaluate(()=>{modal=null;mintSpecial('honey');});await snap('new-coin');
+ await p.evaluate(()=>{modal={kind:'help',at:uiTime};});await snap('new-help');
  await p.evaluate(()=>{modal=null;page='tools';shopTab='ranks';scroll=0;});await snap('tool-ranks');
  await p.evaluate(()=>{page='map';mapTab='areas';scroll=0;});await snap('world-map');
  await p.evaluate(()=>{mapTab='routes';scroll=0;});await snap('route-board');
@@ -32,6 +33,7 @@ const emit=name=>{const b=fs.readFileSync('world-previews/'+name+'.jpg').toStrin
  await p.evaluate(()=>{modal=null;page='home';paused=false;town.startRoute();dialogue=null;});await snap('active-route');
  await p.setViewportSize({width:360,height:640});await snap('phone360');
  await p.evaluate(()=>{page='map';mapTab='forge';scroll=maxScroll;});await snap('phone-forge');
+ await p.evaluate(()=>{worldOf(town).run=null;page='home';modal={kind:'roadmap',at:uiTime};});await snap('phone-roadmap');
  console.log('RENDER_COMPLETE:'+JSON.stringify(await p.evaluate(()=>({build:BUILD,assets:Object.keys(spriteFrames).length,saveAccepted:validV2(town.s),H,screenW,screenH,hits:hits.map(h=>h.id)}))));
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});
