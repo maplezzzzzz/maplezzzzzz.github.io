@@ -805,6 +805,7 @@ circleButton=function(id,name,x,y,r,action,on=true){pixelFrame(x-r,y-r,r*2,r*2,o
 labelPill=function(str,x,y,w,fill='#e0edcb'){pixelFrame(x-w/2,y-11,w,23,fill,'#9dae85',false);text(str,x,y,10,'#526655','center');};
 const PIX_ICONS={coin:'coin0_0',pet:'chicken00',bag:'bag',book:'paper',album:'gem0_0',home:'cottage',land:'mapIcon',map:'mapIcon',power:'star',shovel:'shovel',wide:'shovel',magnet:'key',leaf:'seedling',chest:'chest0',wind:'star',sound:'potion',rake:'axe',watering:'watering',drill:'pick',bell:'seedBag',case:'chest0',rabbit:'friend0',fox:'friend1',owl:'friend2',seedling:'seedling',water:'water0',crystal:'gem0_0',snow:'star',cloud:'water0',rainbow:'gem1_0',house:'cottage',star:'star',compass:'key'};
 const PIX_GLYPHS={
+ book:['01111110','01000010','01011010','01000010','01011010','01000010','01111110','00111100'],
  gear:['00111100','01100110','11000011','10111101','10111101','11000011','01100110','00111100'],
  clock:['00111100','01000010','10010001','10010001','10011101','10000001','01000010','00111100'],
  hand:['00011000','00011000','00111110','01111111','11111111','01111111','00111110','00111100']
@@ -856,9 +857,9 @@ background=function(){
  if(!assetsReady)return;
  const z=worldOf(town).zone,f=field();
  for(let yy=0;yy<H;yy+=32)for(let xx=0;xx<W;xx+=32)tile('grass11',xx,yy);
- cx.save();cx.globalAlpha=.45;cx.fillStyle=['#a1c4a0','#c5d9a2','#a8d8ce','#adbbd7','#dce8e7','#d9d4ef','#c4d5e9'][z];cx.fillRect(0,0,W,H);cx.restore();
+ cx.save();cx.globalAlpha=z>=3?.86:.45;cx.fillStyle=['#a1c4a0','#c5d9a2','#a8d8ce','#adbbd7','#dce8e7','#d9d4ef','#c4d5e9'][z];cx.fillRect(0,0,W,H);cx.restore();
  if(z===2||z===5||z===6){
-  for(let yy=184;yy<f.top-28;yy+=32)for(let xx=0;xx<W;xx+=32)tile('water'+Math.floor(uiTime/330)%4,xx,yy);
+  cx.save();if(z>=5)cx.filter='grayscale(1) brightness(1.8)';for(let yy=184;yy<f.top-28;yy+=32)for(let xx=0;xx<W;xx+=32)tile('water'+Math.floor(uiTime/330)%4,xx,yy);cx.restore();
  }
  for(let i=0;i<10;i++){const xx=(i*79+17)%W,yy=185+(i*123)%(H-195);if(xx<22||xx>362)pixel(i%2?'grassTuft':'flowerPink',xx,yy,32,32);}
  for(const [xx,yy,k]of [[4,213,'tree'],[383,234,'treeSlim'],[8,H-31,'treeSlim'],[382,H-7,'tree']])pixel(k,xx,yy,96,96);
