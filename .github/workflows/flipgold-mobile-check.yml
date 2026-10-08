@@ -1,9 +1,10 @@
-name: Flipgold mobile browser check
+name: Flipgold mobile adventure check
 on:
   push:
-    branches: [master]
+    branches: [master, flipgold-adventure-v3]
     paths:
       - flipgold/**
+      - .github/flipgold-check.cjs
       - .github/workflows/flipgold-mobile-check.yml
   workflow_dispatch:
 permissions:
@@ -11,77 +12,24 @@ permissions:
 jobs:
   mobile-browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
+    env:
+      NODE_PATH: /tmp/flipgold-qa/node_modules
     steps:
-      - name: Install Playwright
-        run: npm install --no-save playwright
+      - name: Check out the exact game revision
+        uses: actions/checkout@v4
+      - name: Install isolated Playwright
+        run: npm install --prefix /tmp/flipgold-qa --no-save playwright
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Verify online game on phone screens
+        run: /tmp/flipgold-qa/node_modules/.bin/playwright install --with-deps chromium
+      - name: Play the adventure on phone screens and check saved progress
         run: |
-          node <<'NODE'
-          const { chromium } = require('playwright');
-          const assert = require('node:assert/strict');
-          (async () => {
-            const browser = await chromium.launch({headless:true});
-            const context = await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
-            const page = await context.newPage();
-            const errors=[];
-            page.on('pageerror', e=>errors.push(e.message));
-            const response=await page.goto('https://maplezzzzzz.github.io/flipgold/',{waitUntil:'domcontentloaded',timeout:60000});
-            assert.equal(response.status(),200);
-            await page.waitForFunction(()=>typeof Town==='function'&&artReady,{timeout:30000});
-            const tap=async(id)=>{
-              await page.waitForFunction(id=>hits.some(h=>h.id===id),id,{timeout:5000});
-              const p=await page.evaluate(id=>{const h=hits.find(h=>h.id===id);return {x:ox+(h.x+h.w/2)*scale,y:oy+(h.y+h.h/2)*scale};},id);
-              await page.touchscreen.tap(p.x,p.y);
-              await page.waitForTimeout(160);
-            };
-            await tap('start');
-            assert.equal(await page.evaluate(()=>town.s.started),true);
-            let p=await page.evaluate(()=>{let p=pos(0);return{x:ox+p.x*scale,y:oy+p.y*scale};});
-            await page.touchscreen.tap(p.x,p.y);
-            await page.waitForTimeout(200);
-            assert.equal(await page.evaluate(()=>town.s.manual),1);
-            await page.evaluate(()=>town.s.gold=10000);
-            await tap('quickCoin');await tap('quickCoin');
-            await tap('nav-tools');await tap('buy-shovel');
-            assert.equal(await page.evaluate(()=>modal.kind),'upgrade');
-            await tap('upgradeOK');await tap('nav-pet');await tap('recruit');
-            assert.equal(await page.evaluate(()=>town.s.pet),1);
-            await tap('upgradeOK');
-            await page.waitForTimeout(5000);
-            assert.ok(await page.evaluate(()=>town.s.petFlips>=1));
-            p=await page.evaluate(()=>{let p=pos(0);return{x:ox+p.x*scale,y:oy+p.y*scale};});
-            await page.mouse.move(p.x,p.y);await page.mouse.down();
-            await page.waitForTimeout(1800);await page.mouse.up();
-            assert.ok(await page.evaluate(()=>town.s.manual>=4));
-            await tap('nav-tools');await tap('shopExplore');await tap('buy-land');
-            for(let i=0;i<5;i++)await tap('dig');
-            assert.equal(await page.evaluate(()=>modal.kind),'treasure');
-            await tap('treasureOK');
-            assert.ok(await page.evaluate(()=>town.s.coins.includes('clover')));
-            await tap('nav-tools');await tap('shopTools');await tap('buy-wide');await tap('upgradeOK');
-            await page.waitForTimeout(1400);await tap('skill');
-            assert.ok(await page.evaluate(()=>town.skillAt>time));
-            await tap('settings');await tap('toggle-sound');await tap('settingsOK');
-            assert.equal(await page.evaluate(()=>town.s.sound),false);
-            await page.setViewportSize({width:360,height:640});await page.waitForTimeout(300);
-            assert.ok(await page.evaluate(()=>hits.every(h=>h.x>=0&&h.x+h.w<=390&&h.y>=0&&h.y+h.h<=H)));
-            await tap('nav-pet');await tap('nav-home');
-            await page.setViewportSize({width:390,height:844});await page.waitForTimeout(600);
-            assert.deepEqual(errors,[]);
-            const state=await page.evaluate(()=>({coins:town.s.coins.length,manual:town.s.manual,petFlips:town.s.petFlips,petGold:town.s.petGold,tool:town.s.tool,land:town.s.land,gold:town.s.gold}));
-            console.log('FLIPGOLD_BROWSER_VERIFIED:'+JSON.stringify(state));
-            const screenshot=await page.screenshot({path:'flipgold-mobile.jpg',type:'jpeg',quality:50});
-            console.log('FLIPGOLD_SCREENSHOT_BASE64:'+screenshot.toString('base64'));
-            await browser.close();
-          })().catch(e=>{console.error(e);process.exitCode=1;});
-          NODE
-      - name: Save mobile screenshot
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/flipgold-http.log 2>&1 &
+          node .github/flipgold-check.cjs
+      - name: Save game previews
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: flipgold-mobile-preview
-          path: flipgold-mobile.jpg
+          name: flipgold-adventure-previews
+          path: game-previews/*.jpg
           if-no-files-found: ignore
