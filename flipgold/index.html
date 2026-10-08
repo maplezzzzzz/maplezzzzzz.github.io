@@ -739,6 +739,7 @@ function frame(stamp){
 
 
 
+
 let assetsReady=false,assetsFailed=false,assetsProgress=0,spriteFrames={},spriteAtlases={};
 async function loadSprites(){
  assetsFailed=false;assetsReady=false;assetsProgress=0;
@@ -767,7 +768,7 @@ const PIXEL_ALIASES={
 function sprite(key,x,y,w=48,h=w,flip=false,alpha=1){
  if(PIXEL_ALIASES[key])key='pixel/'+PIXEL_ALIASES[key];
  const f=spriteFrames[key],a=f&&spriteAtlases[f.atlas];if(!f||!a)return false;
- const raw=Math.min(w/f.w,h/f.h),k=raw>=1?Math.max(1,Math.floor(raw)):raw;
+ const raw=Math.min(w/f.w,h/f.h),k=raw>=1?Math.max(1,Math.round(raw)):raw;
  const sw=Math.round(f.w*k),sh=Math.round(f.h*k);
  cx.save();cx.imageSmoothingEnabled=false;cx.globalAlpha*=alpha;cx.translate(Math.round(x),Math.round(y));
  if(flip)cx.scale(-1,1);
@@ -784,6 +785,7 @@ function tilePatch(group,x,y,w,h){
  for(let j=0;j<m;j++)for(let i=0;i<n;i++)tile(group+(i===0?0:i===n-1?2:1)+(j===0?0:j===m-1?2:1),x+i*32,y+j*32);
  cx.restore();
 }
+function nine(key,x,y,w,h,border=12){pixelFrame(x,y,w,h,'#fff3d4','#93ad90',false);return true;}
 function pixelFrame(x,y,w,h,fill,edge='#7e9b89',shadow=true){
  x=Math.round(x);y=Math.round(y);w=Math.round(w);h=Math.round(h);
  if(shadow){cx.fillStyle='#334e4933';cx.fillRect(x+3,y+5,w-2,h-2);}
@@ -801,7 +803,7 @@ button=function(id,label,x,y,w,h,action,opt={}){
 };
 circleButton=function(id,name,x,y,r,action,on=true){pixelFrame(x-r,y-r,r*2,r*2,on?'#f4e9c5':'#d6d9c7');icon(name,x,y,r*1.35);addHit(id,x-r-3,y-r-3,r*2+6,r*2+6,action,on);};
 labelPill=function(str,x,y,w,fill='#e0edcb'){pixelFrame(x-w/2,y-11,w,23,fill,'#9dae85',false);text(str,x,y,10,'#526655','center');};
-const PIX_ICONS={coin:'coin0_0',pet:'chicken00',bag:'bag',book:'book',album:'gem0_0',home:'cottage',land:'grass11',map:'grass11',power:'star',shovel:'shovel',wide:'shovel',magnet:'key',leaf:'seedling',chest:'chest0',wind:'star',sound:'potion',rake:'axe',watering:'watering',drill:'pick',bell:'seedBag',case:'chest0',rabbit:'hero00',fox:'hero20',owl:'hero10',seedling:'seedling',water:'water0',crystal:'gem0_0',snow:'star',cloud:'water0',rainbow:'gem1_0',house:'cottage',star:'star',compass:'key'};
+const PIX_ICONS={coin:'coin0_0',pet:'chicken00',bag:'bag',book:'paper',album:'gem0_0',home:'cottage',land:'grass11',map:'grass11',power:'star',shovel:'shovel',wide:'shovel',magnet:'key',leaf:'seedling',chest:'chest0',wind:'star',sound:'potion',rake:'axe',watering:'watering',drill:'pick',bell:'seedBag',case:'chest0',rabbit:'hero00',fox:'hero20',owl:'hero10',seedling:'seedling',water:'water0',crystal:'gem0_0',snow:'star',cloud:'water0',rainbow:'gem1_0',house:'cottage',star:'star',compass:'key'};
 const PIX_GLYPHS={
  gear:['00111100','01100110','11000011','10111101','10111101','11000011','01100110','00111100'],
  clock:['00111100','01000010','10010001','10010001','10011101','10000001','01000010','00111100'],
@@ -835,7 +837,7 @@ squirrel=function(x,y,s=1,walk=0,level=1,flip=false){
 };
 function hero(x,y,s=1,action=false){
  const n=Math.floor(uiTime/180)%4;
- pixel(action?'action0_'+(n%2):'hero0'+n,x,y-10*s,64*s,64*s);
+ pixel(action?'action0_'+(n%2):'hero0'+n,x,y-10*s,(action?96:64)*s,(action?96:64)*s);
 }
 acorn=function(x,y,r=12){pixel('seed',x,y,r*2.7,r*2.7);};
 flower=function(x,y,s=1,color){pixel('sunflower',x,y-11*s,24*s,48*s);};
