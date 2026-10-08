@@ -831,8 +831,8 @@ coin=function(x,y,r=24,type='copper',phase=0,ready=true){
  cx.restore();
 };
 squirrel=function(x,y,s=1,walk=0,level=1,flip=false){
- const n=Math.floor(Math.abs(walk)*1.8)%4,hit=time-lastPetHit<350;
- pixel('chicken'+(hit?'1':'0')+n,x,y-12*s,52*s,52*s,flip);
+ const hit=time-lastPetHit<350,moving=hit||started&&time<petVisual.end||time<town.feedUntil,n=Math.floor(Math.abs(walk)*1.8)%(moving?4:2);
+ pixel('chicken'+(moving?'1':'0')+n,x,y-12*s,52*s,52*s,flip);
  if(level>=3)pixel('seedling',x+13*s,y-34*s,16*s,16*s);
  if(level>=5)pixel('star',x-17*s,y-35*s,16*s,16*s);
 };
@@ -850,7 +850,7 @@ tower=function(x,y,s=1,awake=false){
  icon('clock',x,y-40*s,19*s);
  if(awake&&Math.floor(uiTime/500)%2)pixel('star',x+29*s,y-55*s,18*s,18*s);
 };
-bird=function(x,y,s=1){pixel('chicken0'+(Math.floor(uiTime/150)%4),x,y,48*s,48*s,Math.floor(uiTime/1800)%2===0);pixel('note',x+10*s,y+15*s,26*s,16*s);};
+bird=function(x,y,s=1){pixel('chicken1'+(Math.floor(uiTime/150)%4),x,y,48*s,48*s,Math.floor(uiTime/1800)%2===0);pixel('note',x+10*s,y+15*s,26*s,16*s);};
 chestOpen=function(x,y,phase){pixel('chest'+[3,2,1,0][Math.min(3,Math.floor(phase*4))],x,y,144,86);};
 background=function(){
  cx.fillStyle='#bdd5a5';cx.fillRect(0,0,W,H);
