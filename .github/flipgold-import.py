@@ -47,7 +47,9 @@ for pack in SPEC['packs']:
   p=info.filename
   if not p.lower().endswith('.png') or any(s in p.lower() for s in ['preview','sample','spritesheet','tilemap']):continue
   if pack['id']=='items' and 'Colored/' not in p and '/Colored/' not in p:continue
-  if '/PNG/' not in '/'+p and not p.startswith('PNG/'):continue
+  if pack['id']=='farm':
+   if not p.startswith('Angle/') or not p.endswith('_S.png'):continue
+  elif '/PNG/' not in '/'+p and not p.startswith('PNG/'):continue
   name=p.split('/')[-1];im=Image.open(io.BytesIO(z.read(info))).convert('RGBA')
   if name not in ims or im.width>ims[name].width:ims[name]=im
  if not ims:raise RuntimeError('No sprites in '+pack['id']+' '+str(z.namelist()[:40]))
