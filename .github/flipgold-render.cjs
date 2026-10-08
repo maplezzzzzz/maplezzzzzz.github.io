@@ -10,8 +10,14 @@ const emit=name=>{const b=fs.readFileSync('world-previews/'+name+'.jpg').toStrin
  await snap('intro');
  await p.evaluate(()=>{start();});await p.waitForTimeout(100);
  await p.evaluate(()=>{dialogue=null;dialogueQueue=[];});await snap('first-garden');
- await p.evaluate(()=>{town.s.coins=['copper','copper','clover','sun','royal','berry','river','crystal','frost','star'];town.s.tool=3;town.s.power=4;town.s.pet=3;town.s.land=3;town.s.clock=true;town.s.gold=500000;town.s.total=500000;town.s.play.charm='nest';town.s.play.nuts=15;const w=worldOf(town);w.unlocked=4;w.zone=3;w.gems=24;w.refine=3;w.clears=[8,8,8,3,0,0,0];w.owned=['rake','watering','drill'];w.equipped='drill';w.companions=['rabbit','fox'];w.companion='rabbit';dialogue=null;dialogueQueue=[];modal=null;cinema=null;displayGold=town.s.gold;town.shiny={i:7,start:time,until:time+5000};paused=true;});
+ await p.evaluate(()=>{town.s.coins=['copper','copper','clover','sun','royal','berry','river','crystal','frost','star'];town.s.tool=3;town.s.power=4;town.s.pet=3;town.s.land=3;town.s.clock=true;town.s.gold=500000;town.s.total=500000;town.s.play.charm='nest';town.s.play.nuts=15;const w=worldOf(town);w.unlocked=4;w.zone=3;w.gems=24;w.refine=3;w.clears=[8,8,8,3,0,0,0];w.owned=['rake','watering','drill'];w.equipped='drill';town.s.manual=5000;const p=growthOf(town);p.ranks.shovel=3;p.ranks.wide=3;p.ranks.magnet=1;p.ranks.rake=3;p.ranks.watering=2;p.ranks.drill=1;p.collection={};for(const k of town.s.coins)p.collection[k]=(p.collection[k]||0)+1;p.floor=[];p.notices=['coins','shovel','pet','treasure','wide','map','clock','journey1','journey2','journey3','journey4','journey5','endless'];w.companions=['rabbit','fox'];w.companion='rabbit';dialogue=null;dialogueQueue=[];modal=null;cinema=null;displayGold=town.s.gold;town.shiny={i:7,start:time,until:time+5000};paused=true;});
  await snap('crystal-garden');
+ await p.evaluate(()=>{paused=false;feedback(town.swing(0,time));});await p.waitForTimeout(140);await snap('coins-in-air');await p.waitForTimeout(700);await p.evaluate(()=>{paused=true;modal=null;dialogue=null;});await snap('coins-landed');
+ await p.evaluate(()=>{modal={kind:'roadmap',at:uiTime};});await snap('roadmap');
+ await p.evaluate(()=>{modal=null;page='album';scroll=0;growthOf(town).fragments.honey=10;});await snap('collection');
+ await p.evaluate(()=>{modal={kind:'coinDetail',id:'honey',at:uiTime};});await snap('coin-detail');
+ await p.evaluate(()=>{modal=null;mintSpecial('honey');});await snap('new-coin');
+ await p.evaluate(()=>{modal=null;page='tools';shopTab='ranks';scroll=0;});await snap('tool-ranks');
  await p.evaluate(()=>{page='map';mapTab='areas';scroll=0;});await snap('world-map');
  await p.evaluate(()=>{mapTab='routes';scroll=0;});await snap('route-board');
  await p.evaluate(()=>{mapTab='forge';scroll=0;});await snap('refinement');
