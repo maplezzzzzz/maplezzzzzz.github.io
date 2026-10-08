@@ -4,6 +4,7 @@ const assert=require('node:assert/strict');
 const URL='http://127.0.0.1:4173/flipgold/';
 require('fs').mkdirSync('game-previews',{recursive:true});
 let activeChecks=[];
+const emitImage=name=>{const fs=require('fs'),p='game-previews/'+name+'.jpg';if(!fs.existsSync(p))return;const b=fs.readFileSync(p).toString('base64');for(let i=0;i<b.length;i+=5000)console.log('ADVENTURE_IMAGE:'+name+':'+(i/5000)+':'+b.slice(i,i+5000));};
 (async()=>{
  const browser=await chromium.launch({headless:true});
  const errors=[],checks=activeChecks;
@@ -16,7 +17,7 @@ let activeChecks=[];
   if(!await p.evaluate(id=>hits.some(h=>h.id===id),id)){
    await p.evaluate(()=>{if(scrollArea)scroll=maxScroll;});await p.waitForTimeout(100);
   }
-  try{await p.waitForFunction(id=>hits.some(h=>h.id===id),id,{timeout:5000});}catch(e){console.log('TAP_DIAG:'+JSON.stringify(await p.evaluate(()=>({hits:hits.map(h=>h.id),intro,started,lockBlocked,lockOwned,TAB_ID,lock:localStorage.getItem(LOCK_KEY),hidden:document.hidden,H,screenH,scale,lastOwnSave:!!lastOwnSave,storedMatches:localStorage.getItem(STORE_KEY)===lastOwnSave,artReady}))));await snap('failure',p);console.log('FAILURE_SCREENSHOT_BASE64:'+require('fs').readFileSync('game-previews/failure.jpg').toString('base64'));throw e;}
+  try{await p.waitForFunction(id=>hits.some(h=>h.id===id),id,{timeout:5000});}catch(e){console.log('TAP_DIAG:'+JSON.stringify(await p.evaluate(()=>({hits:hits.map(h=>h.id),intro,started,lockBlocked,lockOwned,TAB_ID,lock:localStorage.getItem(LOCK_KEY),hidden:document.hidden,H,screenH,scale,lastOwnSave:!!lastOwnSave,storedMatches:localStorage.getItem(STORE_KEY)===lastOwnSave,artReady}))));await snap('failure',p);emitImage('failure');throw e;}
   const v=await p.evaluate(id=>{const h=hits.find(h=>h.id===id);return{x:ox+(h.x+h.w/2)*scale,y:oy+(h.y+h.h/2)*scale};},id);
   await p.touchscreen.tap(v.x,v.y);await p.waitForTimeout(160);
  };
@@ -112,6 +113,6 @@ let activeChecks=[];
  await tap('pause',pausePage);await pausePage.waitForTimeout(150);assert.ok(await pausePage.evaluate(s=>town.s.seconds-s<.8,pausedState.seconds));report('paused background pays nothing and does not double count elapsed time');
  assert.deepEqual(errors,[]);
  console.log('ADVENTURE_CHECK_RESULT:'+JSON.stringify({checks,unit,state,errors}));
- const screenshot=require('fs').readFileSync('game-previews/garden.jpg');console.log('ADVENTURE_SCREENSHOT_BASE64:'+screenshot.toString('base64'));
+ for(const name of ['intro','gift-choice','garden','phone360','treasure-story','clock-letter'])emitImage(name);
  await browser.close();
-})().catch(e=>{console.error(e);console.log('ADVENTURE_PARTIAL_RESULT:'+JSON.stringify(activeChecks));const fs=require('fs');const p=['garden','treasure-story','gift-choice','intro'].map(n=>'game-previews/'+n+'.jpg').find(p=>fs.existsSync(p));if(p)console.log('ADVENTURE_SCREENSHOT_BASE64:'+fs.readFileSync(p).toString('base64'));process.exit(1);});
+})().catch(e=>{console.error(e);console.log('ADVENTURE_PARTIAL_RESULT:'+JSON.stringify(activeChecks));const fs=require('fs');const p=['garden','treasure-story','gift-choice','intro'].map(n=>'game-previews/'+n+'.jpg').find(p=>fs.existsSync(p));if(p)emitImage(p.split('/').pop().replace('.jpg',''));process.exit(1);});
