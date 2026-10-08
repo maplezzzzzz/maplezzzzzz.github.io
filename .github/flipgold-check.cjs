@@ -9,14 +9,14 @@ let activeChecks=[];
  const errors=[],checks=activeChecks;
  const report=c=>{checks.push(c);console.log('PASSED:'+c);};
  const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
- const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+ const page=await context.newPage();page.on('pageerror',e=>{errors.push(e.message);console.log('PAGE_ERROR:'+e.message);});
  const open=async p=>{const r=await p.goto(URL,{waitUntil:'domcontentloaded',timeout:30000});assert.equal(r.status(),200);await p.waitForFunction(()=>typeof Town==='function'&&artReady,{timeout:15000});};
  const tap=async(id,p=page)=>{
   await p.waitForTimeout(90);
   if(!await p.evaluate(id=>hits.some(h=>h.id===id),id)){
    await p.evaluate(()=>{if(scrollArea)scroll=maxScroll;});await p.waitForTimeout(100);
   }
-  await p.waitForFunction(id=>hits.some(h=>h.id===id),id,{timeout:5000});
+  try{await p.waitForFunction(id=>hits.some(h=>h.id===id),id,{timeout:5000});}catch(e){console.log('TAP_DIAG:'+JSON.stringify(await p.evaluate(()=>({hits:hits.map(h=>h.id),intro,started,lockBlocked,lockOwned,TAB_ID,lock:localStorage.getItem(LOCK_KEY),hidden:document.hidden,H,screenH,scale,lastOwnSave:!!lastOwnSave,storedMatches:localStorage.getItem(STORE_KEY)===lastOwnSave,artReady}))));await snap('failure',p);console.log('FAILURE_SCREENSHOT_BASE64:'+require('fs').readFileSync('game-previews/failure.jpg').toString('base64'));throw e;}
   const v=await p.evaluate(id=>{const h=hits.find(h=>h.id===id);return{x:ox+(h.x+h.w/2)*scale,y:oy+(h.y+h.h/2)*scale};},id);
   await p.touchscreen.tap(v.x,v.y);await p.waitForTimeout(160);
  };
@@ -54,7 +54,7 @@ let activeChecks=[];
  await tap('nav-tools');await tap('shopTools');await tap('buy-power');await tap('nav-pet');await tap('petUpgrade');await tap('petUpgrade');await tap('charmSpark');await tap('nav-home');
  assert.equal(await page.evaluate(()=>town.s.pet),3);assert.equal(await page.evaluate(()=>town.s.play.charm),'spark');
  await page.evaluate(()=>{dialogue=null;dialogueQueue=[];toastState=null;town.shiny={i:4,start:time,until:time+5000};});
- await snap('garden');report('wide shovel, active skill, animal wardrobe and free charm switch');
+ await page.waitForTimeout(300);console.log('CANVAS_DIAG:'+JSON.stringify(await page.evaluate(()=>({w:canvas.width,h:canvas.height,H,screenH,rect:canvas.getBoundingClientRect().toJSON(),bottom:Array.from(cx.getImageData(195,H-30,1,1).data)}))));await snap('garden');report('wide shovel, active skill, animal wardrobe and free charm switch');
  await page.evaluate(()=>{town.visitor={kind:'rain',start:time-2000,until:time+10000};});await tap('visitor');assert.equal(await page.evaluate(()=>town.buff.kind),'rain');
  await page.evaluate(()=>{town.s.manual+=35;});await tap('nav-journal');await tap('deliver');
  assert.equal(await page.evaluate(()=>town.s.play.deliveries),1);report('rain changes coin recovery and repeatable commission pays');
