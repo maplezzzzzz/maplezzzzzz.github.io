@@ -333,7 +333,7 @@ Town.prototype.randomLanding=function(skip){
  for(let n=0;n<100;n++){const c={x:.05+Math.random()*.9,y:.05+Math.random()*.9,a:(Math.random()-.5)*.6};let d=1e9;for(let i=0;i<a.length;i++)if(i!==skip)d=Math.min(d,Math.hypot((c.x-a[i].x)*302,(c.y-a[i].y)*132));if(d>score){score=d;best=c;}if(d>48)break;}return best;
 };
 Town.prototype.floorPoint=function(i,t=this.activeTime,air=true){
- const a=this.ensureFloor()[i]||{x:.5,y:.5,a:0},m=this.motions?.[i];if(!m||t>=m.end)return {...a,lift:0,phase:0};
+ const a=this.ensureFloor()[i]||{x:.5,y:.5,a:0},m=this.motions?.[i];if(!m)return {...a,lift:0,phase:0};if(t>=m.end){const settle=Math.max(0,Math.min(1,(t-m.end)/120));return {...a,lift:air?Math.sin(settle*Math.PI)*4:0,phase:0};}
  const k=Math.max(0,Math.min(1,(t-m.start)/(m.end-m.start))),e=1-(1-k)**2;
  return {x:m.from.x+(a.x-m.from.x)*e,y:m.from.y+(a.y-m.from.y)*e,a:m.from.a+(a.a-m.from.a)*e,lift:air?Math.sin(k*Math.PI)*(m.height||43):0,phase:k};
 };
@@ -500,8 +500,8 @@ function switchPage(p){hold=-1;page=p;scroll=0;focused=-1;sfx('tap');}
 const UPGRADES={
  shovel:{icon:'shovel',title:'一铲，三份好运',line:'点击一枚，会一起翻动最近的两枚。\n栗栗也准备来帮忙了。'},
  pet:{icon:'pet',title:'栗栗加入寻宝',line:'每 4 秒认真翻 1 枚硬币。\n送你 3 颗橡果，喂它试试小跑加速。'},
- wide:{icon:'wide',title:'整排金光 + 金叶旋风',line:'一铲翻整排。等更多硬币亮起来，\n再用旋风，让全庭院收益 ×2。'},
- magnet:{icon:'magnet',title:'让金币追着指尖走',line:'滑过硬币，附近 3×3 一起翻。\n旋风冷却缩短至 9 秒。'}
+ wide:{icon:'wide',title:'扫起金光 + 金叶旋风',line:'一铲扫过一片地面。等更多硬币亮起来，\n再用旋风，让全庭院收益 ×2。'},
+ magnet:{icon:'magnet',title:'让金币追着指尖走',line:'滑过硬币，范围内的金币一起翻。\n旋风冷却缩短至 9 秒。'}
 };
 function buy(id){if(!control())return;if(!town.buy(id)){const it=specs().find(x=>x.id===id);toast(it&&!it.ok?it.reason:'还差一点金币。闪光币会给你三倍好运！');return false;}
  displayGold=Math.min(displayGold,town.s.gold);save();sfx('unlock');vibe(15);
@@ -691,7 +691,7 @@ function home(){
  drawWorld();drawField();drawDialogue();
  const s=town.s,y=H-237;box(15,y,360,43,'#fff5dcf5',C.ink,13,1.8);icon(s.pet?'pet':'leaf',39,y+23,30);
  if(s.pet){text('栗栗 Lv.'+s.pet+' · '+(PET_MS[s.pet]/1000)+'秒 / 枚',61,y+13,11,C.ink);text('已带回 '+short(s.petGold)+' 金币'+(time<town.feedUntil?' · 小跑中！':''),61,y+30,10,'#759053','left',600);addHit('petbar',17,y,265,44,()=>switchPage('pet'));acorn(288,y+22,8);button('feed','喂 '+short(s.play.nuts),304,y+2,68,38,feedPet,{size:12,green:time>=town.feedAt&&s.play.nuts>0});}
- else{text(s.tool?'栗栗准备好了，招募只要 90 金币':'小铲子之后，栗栗会来帮忙',61,y+14,11,C.ink);text('每次只翻一枚 · 升级跑得更快',61,y+31,10,'#8c744e');addHit('petbar',15,y,360,44,()=>switchPage('pet'));}
+ else{text(s.tool?'栗栗准备好了，招募只要 180 金币':'小铲子之后，栗栗会来帮忙',61,y+14,11,C.ink);text('每次只翻一枚 · 升级跑得更快',61,y+31,10,'#8c744e');addHit('petbar',15,y,360,44,()=>switchPage('pet'));}
  const fever=time<town.feverUntil,cy=H-188;text(fever?'金币雨 · 收益 ×2':'好运共鸣 '+town.chain+'/24',22,cy,11,fever?'#fff6cd':'#ffefb6','left',800,1.8);meter(190,cy-4,173,9,fever?(town.feverUntil-time)/8000:town.chain/24,fever?'gold':'green');
  const by=H-173;panel(10,by,370,81,'wood');icon(['hand','shovel','wide','magnet'][s.tool],39,by+30,35);text(['徒手翻币','爷爷的小铲','黄铜宽铲','磁力手套'][s.tool],65,by+23,12,'#fff6d6','left',800,1.4);text(['轻触 / 按住','最近 3 枚','横向扫过一片','滑动范围吸附'][s.tool],65,by+43,10,'#efd6a0');
  const room=s.coins.length<town.capacity();button('quickCoin',room?'＋ '+short(town.coinCost()):'扩建',163,by+15,103,48,()=>{if(room)buy('coin');else{shopTab='explore';switchPage('tools');}},{icon:room?'coin':'land',size:15,green:room&&s.gold>=town.coinCost()});
@@ -744,7 +744,7 @@ function shop(){
 function petPage(){
  const s=town.s,{y,h}=sheet('伙伴营地 · 栗栗','它记得每一枚替你翻过的硬币');
  squirrel(197,y+133,1.32,uiTime*.006,Math.max(1,s.pet));labelPill(s.pet?'寻宝伙伴 Lv.'+s.pet:'爱听叮当声的小鸡',195,y+196,174,'#e0e9b9');
- if(!s.pet){wrap('“小铲子准备好了吗？\n我每次认真翻一枚。你找惊喜，我守庭院。”',195,y+234,300,13,C.ink,23,'center');button('recruit',s.tool?'招募栗栗  ◈ 90':'先去找爷爷的小铲子',40,y+h-72,310,48,()=>s.tool?buy('pet'):(shopTab='tools',switchPage('tools')),{green:!!s.tool,size:16});return;}
+ if(!s.pet){wrap('“小铲子准备好了吗？\n我每次认真翻一枚。你找惊喜，我守庭院。”',195,y+234,300,13,C.ink,23,'center');button('recruit',s.tool?'招募栗栗  ◈ 180':'先去找爷爷的小铲子',40,y+h-72,310,48,()=>s.tool?buy('pet'):(shopTab='tools',switchPage('tools')),{green:!!s.tool,size:16});return;}
  const compact=H<780,boxY=y+225;box(31,boxY,328,59,'#e6dfb5','#c0b078',12,1.3);
  text('每 '+(PET_MS[s.pet]/1000)+' 秒翻 1 枚',195,boxY+16,14,C.ink,'center');text('已赚 '+fmt(s.petGold)+' · 橡果 '+s.play.nuts+' · 小跑 '+(time<town.feedUntil?'进行中':'待命'),195,boxY+40,11,'#7d8954','center');
  const yy=boxY+70;
@@ -883,7 +883,7 @@ function frame(stamp){
  if(intro)introScreen();
  else{background();if(page==='home'){cx.save();if(screenShake)cx.translate((Math.random()-.5)*screenShake,(Math.random()-.5)*screenShake);home();cx.restore();}
   else if(page==='tools')shop();else if(page==='pet')petPage();else if(page==='album')album();else if(page==='journal')journal();else if(page==='map')worldPage();
-  drawEffects(active?dt:0);header();quest();nav();
+  if(page==='home'&&!modal&&!cinema)drawEffects(active?dt:0);else{particles=[];floaters=[];flying=[];ripples=[];swings=[];trails=[];}header();quest();nav();
   if(toastState&&uiTime<toastState.until&&!modal&&!cinema){const y=H-287;box(26,y,338,42,'#465c36f5','#e3d499',14,1.8);wrap(toastState.msg,195,y+13,311,11,'#fff1cb',15,'center');}
   modalScreen();drawCinematic();
  }
@@ -1067,7 +1067,7 @@ function worldPage(){const {y,h}=sheet('栗栗的世界地图','第 '+(worldOf(t
  if(mapTab==='areas'){scrollBody(top,view,ZONES.length*139,offset=>ZONES.forEach((z,i)=>{const yy=offset+i*139;if(yy+130<top||yy>top+view)return;panel(28,yy,334,130);icon(z.icon,66,yy+47,52);text(z.name,109,yy+21,16,C.ink);text(i<=w.unlocked?'已抵达 · '+w.clears[i]+'/8 · 收益 ×'+[1,1.6,2.5,4,6.5,10,16][i]:z.label,109,yy+44,10,'#897451');wrap(z.effect,109,yy+62,235,10,'#7b8061',16);
  const allowed=town.zoneAllowed(i),label=w.zone===i?'去远征':i<=w.unlocked?'前往':allowed?short(z.cost)+' 金币':'未解锁';
  wButton('zone-'+i,label,246,yy+90,101,33,()=>w.zone===i?(mapTab='routes',scroll=0):travelZone(i),{green:w.zone===i||i<=w.unlocked||allowed&&town.s.gold>=z.cost,size:11});
- text(i>w.unlocked&&!allowed?i===1?'先挖开第一片藏宝地':i===2?'先修复庭院钟楼':'前一区域完成 4 关':i>w.unlocked?'抵达获得纪念币与星砂':ZONES[i].weather,43,yy+108,9,'#887757');
+ text(i>w.unlocked&&!allowed?town.zoneRequirement(i):i>w.unlocked?'抵达获得纪念币与星砂':ZONES[i].weather,43,yy+108,9,'#887757');
  }));return;}
  if(mapTab==='routes'){const z=ZONES[w.zone],cleared=w.clears[w.zone];scrollBody(top,view,568,offset=>{
  panel(28,offset,334,125);icon(z.icon,67,offset+45,57);text(z.name,109,offset+23,19,C.ink);text(z.weather,109,offset+48,11,'#697e6a');wrap(z.effect,109,offset+70,230,11,'#8a7756',18);
@@ -1228,6 +1228,7 @@ drawDialogue=function(){
 };
 
 
+let lastCoinLandingSfx=0;
 function floorScreen(i,air=true){const f=field(),p=town.floorPoint(i,time,air);return {x:42+p.x*306,y:f.top+26+p.y*Math.max(80,f.bottom-f.top-60)-p.lift,a:p.a,phase:p.phase,lift:p.lift};}
 pos=function(i){return floorScreen(i);};
 sceneHit=function(x,y){const f=field();if(x<18||x>372||y<f.top-35||y>f.bottom+8)return-1;let id=-1,best=1e9;for(let i=0;i<town.s.coins.length;i++){if(time<town.cd[i]||town.petFlight?.i===i)continue;const p=pos(i),d=Math.hypot(x-p.x,y-p.y),r=town.s.coins.length===1?40:town.s.tool>=3?31:27;if(d<r&&d<best){best=d;id=i;}}return id;};
@@ -1243,7 +1244,7 @@ drawField=function(){
  const s=town.s,f=field();tilePatch('dirt',19,f.top-2,352,f.bottom-f.top+6);town.ensureFloor();
  const ids=s.coins.map((_,i)=>i).sort((a,b)=>floorScreen(a,false).y-floorScreen(b,false).y);
  for(const i of ids){
-  const p=pos(i),ground=floorScreen(i,false),ready=time>=town.cd[i],reserved=town.petFlight?.i===i,shiny=town.shiny?.i===i,r=s.coins.length===1?31:21;
+  const p=pos(i),ground=floorScreen(i,false),m=town.motions?.[i];if(m&&time>=m.end&&!m.landed){m.landed=true;if(time-lastCoinLandingSfx>60){sfx('tap');lastCoinLandingSfx=time;}}const ready=time>=town.cd[i],reserved=town.petFlight?.i===i,shiny=town.shiny?.i===i,r=s.coins.length===1?31:21;
   cx.save();cx.globalAlpha=.25*(1-p.lift/90);ellipse(ground.x,ground.y+7,r*.8,r*.24,'#69573e');cx.restore();
   if(shiny){pixel('star',p.x-23,p.y-23,16,16);labelPill('闪光 ×3',p.x,p.y-34,65,'#ffe4a2');}
   cx.save();cx.translate(Math.round(p.x),Math.round(p.y));cx.rotate(p.a);cx.scale(1,.82+.18*Math.sin(p.phase*Math.PI));coin(0,0,r,s.coins[i],p.phase,ready||p.phase>0);cx.restore();
@@ -1383,6 +1384,34 @@ shop=function(){
 };
 buyWorldTool=function(id){if(!control())return;const r=RELICS.find(x=>x.id===id),why=town.requirement(id);if(!town.buyRelic(id)){toast(why||'制作还差 '+short(Math.max(0,r.cost-town.s.gold))+' 金币');return;}save();sfx('unlock');modal={kind:'worldUpgrade',id,at:uiTime};page='home';};
 travelZone=function(z){if(!control())return;const why=town.zoneRequirement(z),r=town.travel(z);if(!r){toast(worldOf(town).run?'先完成或退出这次远征':why||'旅费还差 '+short(Math.max(0,ZONES[z].cost-town.s.gold))+' 金币');return;}displayGold=town.s.gold;page='home';scroll=0;sfx('unlock');save();if(r.chapter!==undefined)chapterModal(r.chapter);else say('到达 '+ZONES[z].name+'！'+ZONES[z].effect);};
+
+
+previewTool=function(id,x,y){
+ const places=[[-62,10],[-16,-9],[31,15],[73,-7],[-45,36],[10,42],[60,40],[-14,-38],[44,-34]],n=id==='shovel'?3:id==='magnet'?9:6,k=(uiTime%2100)/2100;
+ for(let i=0;i<n;i++){const [dx,dy]=places[i];coin(x+dx,y+dy-(k>.32&&k<.65?Math.sin((k-.32)/.33*Math.PI)*22:0),17,'copper',k>.32&&k<.65?(k-.32)/.33:0);}
+ cx.save();cx.translate(x-2,y-48);cx.rotate(-.9+Math.min(1,k/.5)*1.4);icon(id,0,0,48);cx.restore();
+};
+const v6HelpModal=modalScreen;
+modalScreen=function(){
+ if(modal?.kind!=='help'){v6HelpModal();return;}
+ hits=[];hold=-1;scrollArea=null;cx.fillStyle='#355a4bd9';cx.fillRect(0,0,W,H);const h=620,y=(H-h)/2;panel(22,y,346,h);
+ text('栗栗的散币旅行指南',195,y+34,21,C.ink,'center');
+ const rows=[
+ ['翻币','金币会跳起，落在新的位置。轻触或滑动追着翻。'],
+ ['工具','小铲找近邻，宽铲横扫，磁力按半径吸起。'],
+ ['成长','抛光 24 级、栗栗 15 级；每件工具有 8 级熟练度。'],
+ ['藏宝地','扩建家里的庭院，每处多 4 个位置，并挖出故事。'],
+ ['钟楼','塔基、齿轮、钟声三段修复；完工加快恢复、开通河湾。'],
+ ['地图','果园需要藏宝地、宽铲、抛光 Lv.3 与 1.8 万旅费。'],
+ ['发明','果园 2 关开始出现；后续区域逐步开放新工具。'],
+ ['图鉴','31 种币。区域 2/4/8 关开放稀有度，凑碎片修复。'],
+ ['保底','最多 300 次成功翻币给碎片；传说开放后 40 片保底。'],
+ ['巡游','区域 8 关后仍可免费巡游，持续获得碎片与星砂。']
+ ];
+ rows.forEach(([a,b],i)=>{const yy=y+79+i*45;text(a,44,yy,12,'#63856e');wrap(b,94,yy-3,248,11,'#788370',17);});
+ button('helpPlan','看看我当前的下一步',45,y+h-96,300,35,openRoadmap,{green:true,size:12});
+ button('helpOK','回到庭院',45,y+h-50,300,34,closeModal,{size:13});
+};
 
 requestAnimationFrame(frame);
 </script></body></html>
