@@ -1307,7 +1307,7 @@ const v6Switch=switchPage;
 switchPage=function(p){if(p==='map'&&!town.s.land){openRoadmap();return;}v6Switch(p);};
 const v6Home=home;
 home=function(){v6Home();const q=guideStep();pixelFrame(15,159,360,29,'#e8eed3','#8da885',false);text(q.title,26,174,10,'#506d59');text('？',355,174,14,'#597561','center');addHit('roadmap',15,159,360,29,openRoadmap);
- if(!worldOf(town).run&&town.s.manual&& !modal&&!cinema&&!dialogue&&uiTime>1800){const p=growthOf(town);if(!p.notices.includes(q.key)){p.notices.push(q.key);modal={kind:'growthInfo',title:q.title,line:q.line,at:uiTime};save();}}
+ if(!worldOf(town).run&&town.s.manual&& !modal&&!cinema&&!dialogue&&uiTime>1800&&time-town.lastHit>650){const p=growthOf(town);if(!p.notices.includes(q.key)){p.notices.push(q.key);if(['treasure','map','clock','endless'].includes(q.key))modal={kind:'growthInfo',title:q.title,line:q.line,at:uiTime};else toast(q.title);save();}}
 };
 const v6Nav=nav;
 nav=function(){v6Nav();const p=growthOf(town);if(Object.keys(p.fragments).some(k=>p.fragments[k]>=TYPES[k].need)){pixel('star',286,H-74,16,16);}};
@@ -1336,6 +1336,7 @@ worldPage=function(){
 };
 function fragmentSource(id){
  const r=TYPES[id],w=worldOf(town);
+ if(id==='copper')return '基础硬币可直接在装备页购买';
  if(id==='clock')return '修好钟楼后，每 3 次远征胜利获得 1 片';
  if(id==='unity')return '新一轮旅行 + 收集 24 种，每 4 次胜利获得 1 片';
  const lock=r.zone===0?(town.s.land<r.rarity?'找到第 '+r.rarity+' 处藏宝地':''):w.clears[r.zone]<(r.rarity===3?8:r.rarity===2?4:r.rarity===1?2:0)?ZONES[r.zone].name+'完成 '+(r.rarity===3?8:r.rarity===2?4:2)+' 关':'';
