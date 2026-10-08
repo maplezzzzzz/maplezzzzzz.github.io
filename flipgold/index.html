@@ -10,7 +10,7 @@ first:{title:'叮！一束小小的光',line:'这枚硬币……还记得爷爷�
 shovel:{title:'爷爷的旧铲子',line:'铲柄上的三个凹槽，可以同时托起三枚硬币。咱们试试看！'},
 pet:{title:'栗栗的约定',line:'我负责翻币，你负责寻找惊喜。等钟楼响起，我们就能找到爷爷留下的信！'},
 land1:{title:'四叶草下的手记',line:'“把好运分给朋友，它就会长大。”栗栗读完，认真地把手记收进了口袋。'},
-wide:{title:'金叶旋风',line:'宽铲翻起了一排金光。等硬币都亮起来，再放旋风，会赚得更多！'},
+wide:{title:'金叶旋风',line:'宽铲扫起了一片金光。等硬币都亮起来，再放旋风，会赚得更多！'},
 land2:{title:'被树根藏起的街道',line:'石板拼成了回家的路。远处的钟楼里，传来了很轻的滴答声。'},
 magnet:{title:'指尖的小磁场',line:'把手指滑过庭院，附近的硬币都会跟上。爷爷果然藏了好多小发明！'},
 land3:{title:'最后一片回忆',line:'旧照片里，爷爷和一只小鸡站在钟楼前。栗栗说：“原来我也来过这里。”'},
@@ -1368,8 +1368,7 @@ modalScreen=function(){
    text('已拥有 '+count+' 枚 · 在庭院 '+town.s.coins.filter(k=>k===id).length+' 枚',195,y+309,11,'#78846d','center');
    if(id!=='copper'){meter(46,y+341,299,8,fr/r.need,'green');text('修复碎片 '+fr+'/'+r.need,195,y+368,13,'#68836a','center');button('mint-'+id,fr>=r.need?'修复这枚金币':'继续寻找碎片',45,y+h-111,144,38,()=>mintSpecial(id),{green:fr>=r.need,size:11});button('equipCoin','放入庭院',201,y+h-111,144,38,()=>{if(town.equipCoin(id)){save();modal=null;page='home';sfx('unlock');}else toast('没有备用金币，或正在远征中');},{green:count>town.s.coins.filter(k=>k===id).length,size:11});}
    button('coinDetailOK','回到图鉴',45,y+h-57,300,37,()=>{modal=null;},{size:13});
-  }else{wrap('已放入庭院，可以亲手翻动它。\n庭院满时，会换下收益较低的一枚。
-换下的金币仍保存在收藏中。\n每次修复，都让庭院多一份故事。',195,y+266,296,13,'#6d846d',24,'center');button('newCoinOK','翻翻这枚新金币',45,y+h-66,300,43,()=>{modal=null;page='home';},{green:true,size:14});}
+  }else{wrap('已放入庭院，可以亲手翻动它。\n庭院满时，会换下收益较低的一枚。\n换下的金币仍保存在收藏中。\n每次修复，都让庭院多一份故事。',195,y+266,296,13,'#6d846d',24,'center');button('newCoinOK','翻翻这枚新金币',45,y+h-66,300,43,()=>{modal=null;page='home';},{green:true,size:14});}
  }
 };
 
