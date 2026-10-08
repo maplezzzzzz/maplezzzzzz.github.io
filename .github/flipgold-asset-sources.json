@@ -1,0 +1,66 @@
+{
+  "fluent": {
+    "commit": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc",
+    "names": [
+      "Chipmunk",
+      "Coin",
+      "Pick",
+      "Hammer and wrench",
+      "Magnet",
+      "Gear",
+      "Cyclone",
+      "Rabbit",
+      "Fox",
+      "Owl",
+      "Bird",
+      "Chestnut",
+      "Package",
+      "Compass",
+      "Crystal ball",
+      "Snowflake",
+      "Leaf fluttering in wind",
+      "Seedling",
+      "Gem stone",
+      "Telescope",
+      "Water wave",
+      "Sun",
+      "House with garden",
+      "Desert island",
+      "World map",
+      "Four leaf clover",
+      "Gloves",
+      "Basket",
+      "Money bag",
+      "Admission tickets",
+      "Rainbow",
+      "Rocket",
+      "Mantelpiece clock",
+      "Open book",
+      "Scroll",
+      "Tractor",
+      "Key",
+      "Cloud with rain",
+      "Evergreen tree",
+      "Deciduous tree",
+      "Bell",
+      "Sparkles"
+    ]
+  },
+  "packs": [
+    {
+      "id": "farm",
+      "page": "https://kenney.nl/assets/isometric-miniature-farm",
+      "url": "https://kenney.nl/media/pages/assets/isometric-miniature-farm/abd0274182-1670690319/kenney_isometric-miniature-farm.zip"
+    },
+    {
+      "id": "ui",
+      "page": "https://kenney.nl/assets/ui-pack-rpg-expansion",
+      "url": "https://kenney.nl/media/pages/assets/ui-pack-rpg-expansion/7ec4a46657-1677661824/kenney_ui-pack-rpg-expansion.zip"
+    },
+    {
+      "id": "items",
+      "page": "https://kenney.nl/assets/generic-items",
+      "url": "https://kenney.nl/media/pages/assets/generic-items/96b9087204-1677667000/kenney_generic-items.zip"
+    }
+  ]
+}
