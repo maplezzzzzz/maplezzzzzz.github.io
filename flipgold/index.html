@@ -1,6 +1,7 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="theme-color" content="#38513b"><title>翻金镇 · 栗栗的金币庭院</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#29412d;overscroll-behavior:none}body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}canvas{display:block;position:fixed;left:0;top:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;outline:none}</style></head><body><canvas id="game" tabindex="0" role="application" aria-label="翻金镇金币庭院。轻触或滑过硬币赚钱，点闪光硬币获得三倍收益。林间邮差带来奇遇，小松鼠栗栗每次帮翻一枚。空格翻币，Shift加空格旋风，F喂橡果，Tab选择按钮，回车确认。">请使用支持 Canvas 的现代浏览器游玩翻金镇。</canvas><script>
-const BUILD='世界旅行 · 4.0';
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="theme-color" content="#38513b"><title>翻金镇 · 栗栗的金币庭院</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#537967;overscroll-behavior:none}body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}canvas{image-rendering:pixelated;display:block;position:fixed;left:0;top:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;outline:none}</style></head><body><canvas id="game" tabindex="0" role="application" aria-label="翻金镇金币庭院。轻触或滑过硬币赚钱，点闪光硬币获得三倍收益。林间邮差带来奇遇，小鸡栗栗每次帮翻一枚。空格翻币，Shift加空格旋风，F喂橡果，Tab选择按钮，回车确认。">请使用支持 Canvas 的现代浏览器游玩翻金镇。</canvas><script>
+
+const BUILD='像素旅行 · 5.0';
 const TYPES={copper:{name:'幸运铜币',value:1},clover:{name:'四叶草币',value:3},sun:{name:'日光金币',value:5},royal:{name:'古王硬币',value:8},berry:{name:'莓果纪念币',value:12},river:{name:'潮汐蓝币',value:18},crystal:{name:'水晶矿币',value:30},frost:{name:'雪松银币',value:50},star:{name:'云岛星币',value:80},dawn:{name:'极光徽币',value:130}};
 const SLOTS=[[2,1],[1,1],[3,1],[0,1],[4,1],[2,2],[1,2],[3,2],[0,2],[4,2],[2,0],[1,0],[3,0],[0,0],[4,0],[2,3],[1,3],[3,3],[0,3],[4,3]];
 const PET_MS=[0,4000,3200,2500,1900,1400,1000,750];
@@ -12,7 +13,7 @@ land1:{title:'四叶草下的手记',line:'“把好运分给朋友，它就会�
 wide:{title:'金叶旋风',line:'宽铲翻起了一排金光。等硬币都亮起来，再放旋风，会赚得更多！'},
 land2:{title:'被树根藏起的街道',line:'石板拼成了回家的路。远处的钟楼里，传来了很轻的滴答声。'},
 magnet:{title:'指尖的小磁场',line:'把手指滑过庭院，附近的硬币都会跟上。爷爷果然藏了好多小发明！'},
-land3:{title:'最后一片回忆',line:'旧照片里，爷爷和一只小松鼠站在钟楼前。栗栗说：“原来我也来过这里。”'},
+land3:{title:'最后一片回忆',line:'旧照片里，爷爷和一只小鸡站在钟楼前。栗栗说：“原来我也来过这里。”'},
 clock:{title:'给未来的寻宝人',line:'“如果你听到了钟声，说明这里已经重新有了笑声。谢谢你，让我们的家醒来。”'}
 };
 function freshPlay(s){return {rev:3,nuts:0,charm:'none',sparkHits:0,visits:0,skillUses:0,deliveries:0,pity:0,seen:[],jobStart:{manual:s.manual||0,petFlips:s.petFlips||0,sparkHits:0}};}
@@ -243,7 +244,7 @@ Town.prototype.newJourney=function(){const w=worldOf(this);if(w.run||w.clears.so
 Town.prototype.tick=function(t){const before=this.activeTime,events=baseTick.call(this,t),w=worldOf(this);if(w.run){w.run.remaining=Math.max(0,w.run.remaining-Math.max(0,t-before)/1000);if(routeProgress(this)>=w.run.goal)events.push({kind:'routeResult',result:this.finishRoute(true)});else if(w.run.remaining<=0)events.push({kind:'routeResult',result:this.finishRoute(false)});}return events;};
 Town.prototype.offline=function(n){const w=worldOf(this);const amount=this.gain(Math.floor((!this.s.pet||!Number.isFinite(n))?0:Math.min(7200,Math.max(0,n))/(PET_MS[this.s.pet]/1000)*this.s.coins.reduce((v,c)=>v+TYPES[c].value,0)/this.s.coins.length*this.s.power*.5*(this.s.play.charm==='nest'?2:1)*worldRate(this)),true);if(w.run)w.run.start.total+=amount;return amount;};
 
-const C={ink:'#664323',dark:'#55381f',cream:'#fff1c3',gold:'#f6c851',green:'#668b47',green2:'#99bb64',brown:'#b87838',paper:'#f7e3ad',shadow:'#583916',white:'#fff9dd'};
+const C={ink:'#4b6256',dark:'#3d564e',cream:'#fff8df',gold:'#f6c851',green:'#6b957b',green2:'#b4d59b',brown:'#b89a70',paper:'#fff4dc',shadow:'#583916',white:'#fff9dd'};
 function rr(x,y,w,h,r=14){r=Math.min(r,w/2,h/2);cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();}
 function box(x,y,w,h,fill,stroke=C.ink,r=14,lw=2){rr(x,y,w,h,r);cx.fillStyle=fill;cx.fill();if(stroke){cx.strokeStyle=stroke;cx.lineWidth=lw;cx.stroke();}}
 function ellipse(x,y,rx,ry,fill,stroke=null,lw=2){cx.beginPath();cx.ellipse(x,y,rx,ry,0,0,Math.PI*2);cx.fillStyle=fill;cx.fill();if(stroke){cx.strokeStyle=stroke;cx.lineWidth=lw;cx.stroke();}}
@@ -533,11 +534,11 @@ function drawField(){
 }
 function home(){
  drawWorld();drawField();drawDialogue();
- const s=town.s,y=H-237;box(15,y,360,43,'#f9edd0f2',C.ink,13,1.8);icon(s.pet?'pet':'leaf',39,y+23,30);
+ const s=town.s,y=H-237;box(15,y,360,43,'#fff5dcf5',C.ink,13,1.8);icon(s.pet?'pet':'leaf',39,y+23,30);
  if(s.pet){text('栗栗 Lv.'+s.pet+' · '+(PET_MS[s.pet]/1000)+'秒 / 枚',61,y+13,11,C.ink);text('已带回 '+short(s.petGold)+' 金币'+(time<town.feedUntil?' · 小跑中！':''),61,y+30,10,'#759053','left',600);addHit('petbar',17,y,265,44,()=>switchPage('pet'));acorn(288,y+22,8);button('feed','喂 '+short(s.play.nuts),304,y+2,68,38,feedPet,{size:12,green:time>=town.feedAt&&s.play.nuts>0});}
  else{text(s.tool?'栗栗准备好了，招募只要 90 金币':'小铲子之后，栗栗会来帮忙',61,y+14,11,C.ink);text('每次只翻一枚 · 升级跑得更快',61,y+31,10,'#8c744e');addHit('petbar',15,y,360,44,()=>switchPage('pet'));}
  const fever=time<town.feverUntil,cy=H-188;text(fever?'金币雨 · 收益 ×2':'好运共鸣 '+town.chain+'/24',22,cy,11,fever?'#fff6cd':'#ffefb6','left',800,1.8);meter(190,cy-4,173,9,fever?(town.feverUntil-time)/8000:town.chain/24,fever?'gold':'green');
- const by=H-173;panel(10,by,370,81,'wood');icon(['hand','shovel','wide','magnet'][s.tool],39,by+30,35);text(['徒手翻币','爷爷的小铲','黄铜宽铲','磁力手套'][s.tool],65,by+23,12,'#fff0c2','left',800,1.4);text(['轻触 / 按住','最近 3 枚','整排一起翻','滑动吸起 3×3'][s.tool],65,by+43,10,'#efd6a0');
+ const by=H-173;panel(10,by,370,81,'wood');icon(['hand','shovel','wide','magnet'][s.tool],39,by+30,35);text(['徒手翻币','爷爷的小铲','黄铜宽铲','磁力手套'][s.tool],65,by+23,12,'#fff6d6','left',800,1.4);text(['轻触 / 按住','最近 3 枚','整排一起翻','滑动吸起 3×3'][s.tool],65,by+43,10,'#efd6a0');
  const room=s.coins.length<town.capacity();button('quickCoin',room?'＋ '+short(town.coinCost()):'扩建',163,by+15,103,48,()=>{if(room)buy('coin');else{shopTab='explore';switchPage('tools');}},{icon:room?'coin':'land',size:15,green:room&&s.gold>=town.coinCost()});
  if(s.tool>=2){const ready=time>=town.skillAt;circleButton('skill','wind',325,by+30,26,useSkill);if(!ready){ellipse(325,by+30,26,26,'#6b4d3677');text(Math.ceil((town.skillAt-time)/1000)+'s',325,by+30,14,'#fff2bb','center',800,2);}else if(Math.sin(uiTime*.007)>0)ellipse(325,by+30,30,30,'#fff3a410','#fff2ab',1.5);text('旋风 ×2',325,by+65,10,'#ffedb8','center',700,1);}
  else{icon('wind',325,by+30,31);text('宽铲解锁',325,by+66,9,'#e9cfa0','center');addHit('skillHint',293,by+4,64,69,()=>toast('宽铲会解锁全庭院旋风，等更多硬币亮起再放！'));}
@@ -558,7 +559,7 @@ function quest(){
 }
 function nav(){
  panel(8,H-81,374,70,'wood');[['home','home','庭院'],['tools','shovel','装备'],['pet','pet','伙伴'],['album','album','图鉴'],['journal','book','手记']].forEach(([p,i,label],n)=>{
-  const x=18+n*73;if(page===p)box(x,H-76,64,57,'#dce8ae',C.ink,12,1.8);icon(i,x+32,H-55,29);text(label,x+32,H-29,11,page===p?C.ink:'#fff0c2','center',700,page===p?0:1);
+  const x=18+n*73;if(page===p)box(x,H-76,64,57,'#dce8ae',C.ink,12,1.8);icon(i,x+32,H-55,29);text(label,x+32,H-29,11,page===p?C.ink:'#fff6d6','center',700,page===p?0:1);
   addHit('nav-'+p,x,H-78,66,62,()=>switchPage(p));
   if(p==='pet'&&town.s.tool&&!town.s.pet||p==='journal'&&town.s.pet&&town.job().now>=town.job().max){ellipse(x+55,H-73,6,6,'#d99670',C.ink,1);text('!',x+55,H-73,8,'#fff8d8','center');}
  });
@@ -571,14 +572,14 @@ function specs(){const s=town.s;return[
  {id:'magnet',group:'tools',name:'磁力手套',icon:'magnet',desc:'滑动吸起 3×3 · 旋风 9 秒冷却',price:1900,ok:s.tool===2&&s.land>=2,done:s.tool>=3,reason:'需要宽铲与第二片土地'},
  {id:'land',group:'explore',name:['四叶草藏宝地','树根下的旧街','古树记忆之地','藏宝地已找齐'][s.land],icon:'land',desc:'挖掘宝箱 · 稀有硬币 · 庭院复苏',tag:s.land+'/3',price:town.landCost(),ok:s.tool>=1&&s.pet>=1&&!s.dig&&s.land<3&&(s.land===0||s.tool>=2),done:s.land>=3,reason:s.dig?'回庭院，继续拨开泥土':!s.pet?'需要小铲子和栗栗':'先升级黄铜宽铲'},
  {id:'clock',group:'explore',name:'唤醒记忆钟楼',icon:'clock',desc:'硬币恢复更快 · 第一章结尾 · 开启更远的旅行',price:6800,ok:s.pet>=3&&s.land>=2&&!s.clock,done:s.clock,reason:'需要栗栗 Lv.3 和第二片土地'}];}
-function sheet(title,sub){const y=177,h=H-273;panel(14,y,362,h);text(title,195,y+26,21,C.ink,'center',800);text(sub,195,y+51,10,'#957645','center');flower(28,y+22,.45);return{y,h};}
+function sheet(title,sub){const y=177,h=H-273;panel(14,y,362,h);text(title,195,y+26,21,C.ink,'center',800);text(sub,195,y+51,10,'#7f8e75','center');flower(28,y+22,.45);return{y,h};}
 function shop(){
  const {y,h}=sheet('林间小铺','工具升级，要让下一铲有新感觉');
  button('shopTools','工具与硬币',28,y+69,158,41,()=>{shopTab='tools';scroll=0;},{green:shopTab==='tools',size:12});button('shopExplore','探索与小镇',204,y+69,157,41,()=>{shopTab='explore';scroll=0;},{green:shopTab==='explore',size:12});
  const top=y+122,view=h-139,items=specs().filter(i=>i.group===shopTab);maxScroll=Math.max(0,items.length*107-view);scroll=Math.min(scroll,maxScroll);scrollArea={y:top,h:view};
  cx.save();rr(24,top,342,view,10);cx.clip();
  items.forEach((it,n)=>{const yy=top+n*107-scroll;if(yy+101<top||yy>top+view)return;
-  box(27,yy,336,100,'#edddb7','#c5ab7a',13,1.3);box(35,yy+16,48,57,'#fcf0cd','#c4aa74',12,1.2);icon(it.icon,59,yy+44,35);text(it.name,94,yy+20,14,C.ink);if(it.tag)text(it.tag,345,yy+20,10,'#9a7a48','right');text(it.desc,94,yy+43,10,'#8d7048');
+  box(27,yy,336,100,'#f3e7ca','#a6b58f',13,1.3);box(35,yy+16,48,57,'#fcf0cd','#c4aa74',12,1.2);icon(it.icon,59,yy+44,35);text(it.name,94,yy+20,14,C.ink);if(it.tag)text(it.tag,345,yy+20,10,'#9a7a48','right');text(it.desc,94,yy+43,10,'#7b8774');
   const afford=it.ok&&town.s.gold>=it.price,by=yy+54,label=it.done?'已拥有':!it.ok?'未解锁':'◈ '+short(it.price);
   if(by>=top&&by+40<=top+view)button('buy-'+it.id,label,253,by,99,40,()=>{if(!it.ok)toast(it.reason);else buy(it.id);},{size:12,green:afford,enabled:!it.done});
   wrap(it.done?'新好运已经装好':!it.ok?it.reason:afford?'现在就能升级':'还差 '+fmt(it.price-town.s.gold),94,yy+68,153,10,afford?'#678849':'#a0804e',14);
@@ -587,7 +588,7 @@ function shop(){
 }
 function petPage(){
  const s=town.s,{y,h}=sheet('伙伴营地 · 栗栗','它记得每一枚替你翻过的硬币');
- squirrel(197,y+133,1.32,uiTime*.006,Math.max(1,s.pet));labelPill(s.pet?'寻宝伙伴 Lv.'+s.pet:'爱听叮当声的小松鼠',195,y+196,174,'#e0e9b9');
+ squirrel(197,y+133,1.32,uiTime*.006,Math.max(1,s.pet));labelPill(s.pet?'寻宝伙伴 Lv.'+s.pet:'爱听叮当声的小鸡',195,y+196,174,'#e0e9b9');
  if(!s.pet){wrap('“小铲子准备好了吗？\n我每次认真翻一枚。你找惊喜，我守庭院。”',195,y+234,300,13,C.ink,23,'center');button('recruit',s.tool?'招募栗栗  ◈ 90':'先去找爷爷的小铲子',40,y+h-72,310,48,()=>s.tool?buy('pet'):(shopTab='tools',switchPage('tools')),{green:!!s.tool,size:16});return;}
  const compact=H<780,boxY=y+225;box(31,boxY,328,59,'#e6dfb5','#c0b078',12,1.3);
  text('每 '+(PET_MS[s.pet]/1000)+' 秒翻 1 枚',195,boxY+16,14,C.ink,'center');text('已赚 '+fmt(s.petGold)+' · 橡果 '+s.play.nuts+' · 小跑 '+(time<town.feedUntil?'进行中':'待命'),195,boxY+40,11,'#7d8954','center');
@@ -723,7 +724,7 @@ function frame(stamp){
  }
  displayGold+=Math.min(1,dt*12)*(town.s.gold-displayGold);if(Math.abs(displayGold-town.s.gold)<.8)displayGold=town.s.gold;
  bankPulse=Math.max(0,bankPulse-dt*3);screenShake=Math.max(0,screenShake-dt*14);
- cx.setTransform(dpr,0,0,dpr,0,0);cx.fillStyle='#29412d';cx.fillRect(0,0,screenW,screenH);cx.translate(ox,oy);cx.scale(scale,scale);cx.save();rr(0,0,W,H,0);cx.clip();hits=[];scrollArea=null;
+ cx.imageSmoothingEnabled=false;cx.setTransform(dpr,0,0,dpr,0,0);cx.fillStyle='#537967';cx.fillRect(0,0,screenW,screenH);cx.translate(ox,oy);cx.scale(scale,scale);cx.save();rr(0,0,W,H,0);cx.clip();hits=[];scrollArea=null;
  if(intro)introScreen();
  else{background();if(page==='home'){cx.save();if(screenShake)cx.translate((Math.random()-.5)*screenShake,(Math.random()-.5)*screenShake);home();cx.restore();}
   else if(page==='tools')shop();else if(page==='pet')petPage();else if(page==='album')album();else if(page==='journal')journal();else if(page==='map')worldPage();
@@ -739,38 +740,127 @@ function frame(stamp){
 
 
 let assetsReady=false,assetsFailed=false,assetsProgress=0,spriteFrames={},spriteAtlases={};
-async function loadSprites(){assetsFailed=false;assetsReady=false;assetsProgress=0;try{
- const r=await fetch('assets/sprites.json?v=4');if(!r.ok)throw Error('sprite manifest');const m=await r.json();spriteFrames=m.frames;
- const names=[...new Set(Object.values(m.frames).map(f=>f.atlas))];await Promise.all(names.map(name=>new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{spriteAtlases[name]=img;assetsProgress++;resolve();};img.onerror=reject;img.src='assets/'+name+'.png?v=4';})));
- if(!spriteFrames['fluent/chipmunk.png']||!spriteFrames['ui/panel_beigeLight.png'])throw Error('missing artwork');assetsReady=true;artReady=true;
- }catch(e){assetsFailed=true;}}
+async function loadSprites(){
+ assetsFailed=false;assetsReady=false;assetsProgress=0;
+ try{
+  const r=await fetch('assets/sprout-v5.json?v=5');if(!r.ok)throw Error('pixel manifest');
+  const m=await r.json();spriteFrames=m.frames;
+  const names=[...new Set(Object.values(m.frames).map(f=>f.atlas))];
+  await Promise.all(names.map(name=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>{spriteAtlases[name]=im;assetsProgress++;resolve();};im.onerror=reject;im.src='assets/'+name+'.png?v=5';})));
+  if(!spriteFrames['pixel/coin0_0']||!spriteFrames['pixel/chicken00']||!spriteFrames['pixel/grass11'])throw Error('missing pixels');
+  assetsReady=true;artReady=true;
+ }catch(e){assetsFailed=true;}
+}
 loadSprites();
-function sprite(key,x,y,w=48,h=w,flip=false,alpha=1){const f=spriteFrames[key],a=f&&spriteAtlases[f.atlas];if(!f||!a)return false;const k=Math.min(w/f.w,h/f.h),sw=f.w*k,sh=f.h*k;cx.save();cx.globalAlpha*=alpha;cx.translate(x,y);if(flip)cx.scale(-1,1);cx.drawImage(a,f.x,f.y,f.w,f.h,-sw/2,-sh/2,sw,sh);cx.restore();return true;}
-function nine(key,x,y,w,h,border=12){const f=spriteFrames[key],a=f&&spriteAtlases[f.atlas];if(!f||!a)return false;const sx=[0,border,f.w-border,f.w],sy=[0,border,f.h-border,f.h],dx=[x,x+border,x+w-border,x+w],dy=[y,y+border,y+h-border,y+h];for(let i=0;i<3;i++)for(let j=0;j<3;j++)cx.drawImage(a,f.x+sx[i],f.y+sy[j],sx[i+1]-sx[i],sy[j+1]-sy[j],dx[i],dy[j],dx[i+1]-dx[i],dy[j+1]-dy[j]);return true;}
-const baseIcon=icon,baseCoin=coin,baseSquirrel=squirrel,basePanel=panel,baseButton=button;
-const ICON_FILES={pet:'chipmunk',coin:'coin',bag:'money_bag',clock:'mantelpiece_clock',gear:'gear',book:'open_book',album:'compass',home:'house_with_garden',land:'world_map',map:'world_map',power:'sparkles',shovel:'pick',wide:'carpentry_saw',magnet:'magnet',leaf:'four_leaf_clover',chest:'toolbox',wind:'cyclone',hand:'gloves',sound:'bell',rake:'trident_emblem',watering:'teapot',drill:'nut_and_bolt',bell:'bell',case:'toolbox',rabbit:'rabbit',fox:'fox',owl:'owl',seedling:'seedling',water:'water_wave',crystal:'gem_stone',snow:'snowflake',cloud:'cloud_with_rain',rainbow:'rainbow',house:'house_with_garden',star:'sparkles',compass:'compass'};
-icon=function(name,x,y,size=32){if(name==='hand'&&sprite('ui/cursorHand_beige.png',x,y,size*1.05,size*1.05))return;if(name==='drill'&&sprite('items/genericItem_color_001.png',x,y,size*1.2,size*1.2))return;const file=ICON_FILES[name];if(file&&sprite('fluent/'+file+'.png',x,y,size*1.2,size*1.2))return;if(name==='shovel'&&sprite('items/genericItem_color_022.png',x,y,size*1.2,size*1.2))return;baseIcon(name,x,y,size);};
-coin=function(x,y,r=24,type='copper',phase=0,ready=true){if(!assetsReady)return baseCoin(x,y,r,type,phase,ready);const lift=phase?Math.sin(phase*Math.PI)*18:0,sx=phase?Math.max(.09,Math.abs(Math.cos(phase*Math.PI*2))):1;cx.save();cx.translate(x,y-lift);cx.scale(sx,1);ellipse(0,r*.7,r*.74,r*.14,'#42504624');sprite('fluent/coin.png',0,0,r*2.1,r*2.1,false,ready?1:.45);if(type!=='copper'){const overlays={clover:'four_leaf_clover',sun:'sun',royal:'crystal_ball',berry:'blueberries',river:'water_wave',crystal:'gem_stone',frost:'snowflake',star:'sparkles',dawn:'rainbow'};sprite('fluent/'+overlays[type]+'.png',0,-1,r*.93,r*.93,false,ready?1:.45);}cx.restore();};
-squirrel=function(x,y,s=1,walk=0,level=1,flip=false){if(!assetsReady)return baseSquirrel(x,y,s,walk,level,flip);const bob=Math.abs(Math.sin(walk))*Math.min(3,s*4);sprite('fluent/chipmunk.png',x,y-13*s-bob,91*s,97*s,!flip);if(level>=3)sprite('fluent/four_leaf_clover.png',x+5*s,y-49*s,19*s,19*s);if(level>=5)sprite('fluent/sparkles.png',x+32*s,y-32*s,18*s,18*s);};
-acorn=function(x,y,r=12){sprite('fluent/chestnut.png',x,y,r*2.4,r*2.4);};
-flower=function(x,y,s=1,color){sprite('fluent/seedling.png',x,y-8*s,25*s,29*s);};
-house=function(x,y,s=1,restored=false){sprite('fluent/house_with_garden.png',x,y-37*s,105*s,105*s,false,restored?1:.65);};
-tower=function(x,y,s=1,awake=false){sprite('fluent/mantelpiece_clock.png',x,y-44*s,75*s,105*s,false,awake?1:.6);if(awake)sprite('fluent/sparkles.png',x+26*s,y-62*s,22*s,22*s);};
-bird=function(x,y,s=1){sprite('fluent/bird.png',x,y,65*s,65*s,Math.sin(uiTime*.004)<0);};
-panel=function(x,y,w,h,kind='paper'){if(nine(kind==='wood'?'ui/panel_brown.png':'ui/panel_beigeLight.png',x,y,w,h,12))return;basePanel(x,y,w,h,kind);};
-button=function(id,label,x,y,w,h,action,opt={}){const on=opt.enabled!==false,key=on?'ui/buttonLong_beige.png':'ui/buttonLong_grey.png';cx.save();if(on&&opt.green)cx.filter='hue-rotate(55deg) saturate(1.35)';const drawn=nine(key,x,y,w,h,9);cx.restore();if(!drawn)return baseButton(id,label,x,y,w,h,action,opt);if(opt.icon){icon(opt.icon,x+23,y+h/2,23);text(label,x+w/2+9,y+h/2,opt.size||13,on?opt.green?'#3d634d':C.ink:'#89877d','center');}else text(label,x+w/2,y+h/2,opt.size||13,on?opt.green?'#3d634d':C.ink:'#89877d','center');addHit(id,x,y,w,h,action,on);};
-circleButton=function(id,name,x,y,r,action,on=true){sprite(on?'ui/buttonRound_beige.png':'ui/buttonRound_grey.png',x,y,r*2+4,r*2+4);icon(name,x,y,r*1.36);addHit(id,x-r-3,y-r-3,r*2+6,r*2+6,action,on);};
-chestOpen=function(x,y,phase){const f=spriteFrames['fluent/toolbox.png'],a=f&&spriteAtlases[f.atlas];if(!f||!a){icon('chest',x,y,120);return;}const width=124,ratio=width/f.w,height=f.h*ratio,cut=f.h*.36;cx.save();cx.translate(x,y+18);cx.drawImage(a,f.x,f.y+cut,f.w,f.h-cut,-width/2,0,width,height*(1-.36));cx.save();cx.translate(-width/2,0);cx.rotate(-phase*.7);cx.drawImage(a,f.x,f.y,f.w,cut,0,-height*.36,width,height*.36);cx.restore();cx.restore();};
+const PIXEL_ALIASES={
+ 'farm/fenceLow_S.png':'fence0','farm/sacksCrate_S.png':'seedBag',
+ 'fluent/house_with_garden.png':'cottage','fluent/deciduous_tree.png':'tree',
+ 'fluent/evergreen_tree.png':'treeSlim','fluent/blueberries.png':'bushFruit',
+ 'fluent/basket.png':'pail','fluent/rabbit.png':'hero00','fluent/fox.png':'hero20',
+ 'fluent/owl.png':'hero10','fluent/water_wave.png':'water0','fluent/desert_island.png':'grass11',
+ 'fluent/bird.png':'chicken00','fluent/gem_stone.png':'gem0_0',
+ 'fluent/pick.png':'pick','fluent/snowflake.png':'star','fluent/bell.png':'seedBag',
+ 'fluent/cloud_with_rain.png':'water1','fluent/scroll.png':'note',
+ 'fluent/rainbow.png':'gem1_0','fluent/mantelpiece_clock.png':'cottage',
+ 'fluent/telescope.png':'pick','fluent/open_book.png':'book','fluent/sparkles.png':'star'
+};
+function sprite(key,x,y,w=48,h=w,flip=false,alpha=1){
+ if(PIXEL_ALIASES[key])key='pixel/'+PIXEL_ALIASES[key];
+ const f=spriteFrames[key],a=f&&spriteAtlases[f.atlas];if(!f||!a)return false;
+ const raw=Math.min(w/f.w,h/f.h),k=raw>=1?Math.max(1,Math.floor(raw)):raw;
+ const sw=Math.round(f.w*k),sh=Math.round(f.h*k);
+ cx.save();cx.imageSmoothingEnabled=false;cx.globalAlpha*=alpha;cx.translate(Math.round(x),Math.round(y));
+ if(flip)cx.scale(-1,1);
+ cx.drawImage(a,f.x,f.y,f.w,f.h,-Math.round(sw/2),-Math.round(sh/2),sw,sh);cx.restore();return true;
+}
+function pixel(key,x,y,w=48,h=w,flip=false,alpha=1){return sprite('pixel/'+key,x,y,w,h,flip,alpha);}
+function tile(key,x,y,w=32,h=w){
+ const f=spriteFrames['pixel/'+key],a=f&&spriteAtlases[f.atlas];if(!a)return;
+ cx.save();cx.imageSmoothingEnabled=false;cx.drawImage(a,f.x,f.y,f.w,f.h,Math.round(x),Math.round(y),Math.round(w),Math.round(h));cx.restore();
+}
+function tilePatch(group,x,y,w,h){
+ const n=Math.ceil(w/32),m=Math.ceil(h/32);
+ cx.save();cx.beginPath();cx.rect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));cx.clip();
+ for(let j=0;j<m;j++)for(let i=0;i<n;i++)tile(group+(i===0?0:i===n-1?2:1)+(j===0?0:j===m-1?2:1),x+i*32,y+j*32);
+ cx.restore();
+}
+function pixelFrame(x,y,w,h,fill,edge='#7e9b89',shadow=true){
+ x=Math.round(x);y=Math.round(y);w=Math.round(w);h=Math.round(h);
+ if(shadow){cx.fillStyle='#334e4933';cx.fillRect(x+3,y+5,w-2,h-2);}
+ cx.fillStyle=edge;cx.fillRect(x+3,y,w-6,h);cx.fillRect(x,y+3,w,h-6);
+ cx.fillStyle=fill;cx.fillRect(x+3,y+3,w-6,h-6);
+ cx.fillStyle='#ffffff88';cx.fillRect(x+6,y+5,w-12,2);
+}
+panel=function(x,y,w,h,kind='paper'){pixelFrame(x,y,w,h,kind==='wood'?'#668577':'#fff6de',kind==='wood'?'#3f635b':'#93ad90');if(kind==='wood'){cx.fillStyle='#88a392';cx.fillRect(Math.round(x+7),Math.round(y+h-8),Math.round(w-14),2);}};
+button=function(id,label,x,y,w,h,action,opt={}){
+ const on=opt.enabled!==false,green=opt.green,fill=on?green?'#b9d8a1':'#f5dba7':'#d6d9c7',edge=on?green?'#7d9e75':'#baa77c':'#aeb7a6';
+ pixelFrame(x,y,w,h,fill,edge);
+ if(opt.icon){icon(opt.icon,x+22,y+h/2,23);text(label,x+w/2+9,y+h/2,opt.size||13,on?'#4d6259':'#91998a','center');}
+ else text(label,x+w/2,y+h/2,opt.size||13,on?'#4d6259':'#91998a','center');
+ addHit(id,x,y,w,h,action,on);
+};
+circleButton=function(id,name,x,y,r,action,on=true){pixelFrame(x-r,y-r,r*2,r*2,on?'#f4e9c5':'#d6d9c7');icon(name,x,y,r*1.35);addHit(id,x-r-3,y-r-3,r*2+6,r*2+6,action,on);};
+labelPill=function(str,x,y,w,fill='#e0edcb'){pixelFrame(x-w/2,y-11,w,23,fill,'#9dae85',false);text(str,x,y,10,'#526655','center');};
+const PIX_ICONS={coin:'coin0_0',pet:'chicken00',bag:'bag',book:'book',album:'gem0_0',home:'cottage',land:'grass11',map:'grass11',power:'star',shovel:'shovel',wide:'shovel',magnet:'key',leaf:'seedling',chest:'chest0',wind:'star',sound:'potion',rake:'axe',watering:'watering',drill:'pick',bell:'seedBag',case:'chest0',rabbit:'hero00',fox:'hero20',owl:'hero10',seedling:'seedling',water:'water0',crystal:'gem0_0',snow:'star',cloud:'water0',rainbow:'gem1_0',house:'cottage',star:'star',compass:'key'};
+const PIX_GLYPHS={
+ gear:['00111100','01100110','11000011','10111101','10111101','11000011','01100110','00111100'],
+ clock:['00111100','01000010','10010001','10010001','10011101','10000001','01000010','00111100'],
+ hand:['00011000','00011000','00111110','01111111','11111111','01111111','00111110','00111100']
+};
+icon=function(name,x,y,size=32){
+ if(PIX_GLYPHS[name]){
+  const rows=PIX_GLYPHS[name],k=Math.max(2,Math.floor(size/10)),left=Math.round(x-4*k),top=Math.round(y-4*k);
+  cx.fillStyle='#607569';rows.forEach((r,j)=>[...r].forEach((ch,i)=>{if(ch==='1')cx.fillRect(left+i*k,top+j*k,k,k);}));
+  return;
+ }
+ const key=PIX_ICONS[name]||'seedBag';pixel(key,x,y,size*1.3,size*1.3);
+};
+coin=function(x,y,r=24,type='copper',phase=0,ready=true){
+ const rows={copper:0,clover:0,sun:0,royal:2,berry:3,river:1,crystal:1,frost:1,star:0,dawn:2};
+ const n=phase?Math.min(5,Math.floor(phase*6)):0,lift=phase?Math.round(Math.sin(phase*Math.PI)*18):0;
+ cx.save();cx.globalAlpha*=ready?1:.4;
+ cx.fillStyle='#66785835';cx.fillRect(Math.round(x-r*.6),Math.round(y+r*.7),Math.round(r*1.2),3);
+ pixel('coin'+(rows[type]||0)+'_'+n,x,y-lift,r*2.1,r*2.1);
+ if(!phase&&['clover','sun','royal','berry','river','crystal','frost','star','dawn'].includes(type)){
+  const badge={clover:'seedling',sun:'star',royal:'gem2_0',berry:'gem1_0',river:'gem0_0',crystal:'gem0_0',frost:'gem0_0',star:'star',dawn:'gem2_0'}[type];
+  if(r>=20)pixel(badge,x+r*.65,y+r*.5,16,16);
+ }
+ cx.restore();
+};
+squirrel=function(x,y,s=1,walk=0,level=1,flip=false){
+ const n=Math.floor(Math.abs(walk)*1.8)%4,hit=time-lastPetHit<350;
+ pixel('chicken'+(hit?'1':'0')+n,x,y-12*s,52*s,52*s,flip);
+ if(level>=3)pixel('seedling',x+13*s,y-34*s,16*s,16*s);
+ if(level>=5)pixel('star',x-17*s,y-35*s,16*s,16*s);
+};
+function hero(x,y,s=1,action=false){
+ const n=Math.floor(uiTime/180)%4;
+ pixel(action?'action0_'+(n%2):'hero0'+n,x,y-10*s,64*s,64*s);
+}
+acorn=function(x,y,r=12){pixel('seed',x,y,r*2.7,r*2.7);};
+flower=function(x,y,s=1,color){pixel('sunflower',x,y-11*s,24*s,48*s);};
+house=function(x,y,s=1,restored=false){pixel('cottage',x,y-34*s,106*s,106*s,false,restored?1:.75);};
+tower=function(x,y,s=1,awake=false){
+ pixel('cottage',x,y-34*s,100*s,100*s);
+ pixelFrame(x-12*s,y-52*s,24*s,25*s,awake?'#fff4bb':'#d2dcc6','#668577',false);
+ icon('clock',x,y-40*s,19*s);
+ if(awake&&Math.floor(uiTime/500)%2)pixel('star',x+29*s,y-55*s,18*s,18*s);
+};
+bird=function(x,y,s=1){pixel('chicken0'+(Math.floor(uiTime/150)%4),x,y,48*s,48*s,Math.floor(uiTime/1800)%2===0);pixel('note',x+10*s,y+15*s,26*s,16*s);};
+chestOpen=function(x,y,phase){pixel('chest'+Math.min(3,Math.floor(phase*4)),x,y,144,86);};
 background=function(){
- const z=ZONES[worldOf(town).zone],f=field();cx.fillStyle=grad(0,H,z.sky[0],z.sky[1]);cx.fillRect(0,0,W,H);
- cx.fillStyle=grad(160,H-160,z.color+'88','#fff6df');cx.fillRect(0,160,W,H-160);
- const k=worldOf(town).zone;
- for(let i=0;i<5;i++){const x=(i*113+uiTime*.004)%550-80,y=174+(i%3)*23;sprite('fluent/cloud_with_rain.png',x,y,84,49,false,.18);}
- if(k===2){for(let i=0;i<4;i++)sprite('fluent/water_wave.png',45+i*107,f.top-70+Math.sin(uiTime*.002+i)*3,122,95,false,.3);}
- if(k===5||k===6){sprite('fluent/rainbow.png',270,205,180,128,false,.33);for(let i=0;i<7;i++)sprite('fluent/sparkles.png',(i*79+uiTime*.008)%W,210+(i%3)*30,13,13,false,.4);}
- for(const [x,y,s]of [[-3,f.top-75,110],[373,f.top-63,111],[17,H-9,108],[369,H-16,111]])sprite('fluent/'+(k===4?'evergreen_tree':'deciduous_tree')+'.png',x,y,s,s);
- if(k===4)for(let i=0;i<18;i++)ellipse((i*71+Math.sin(uiTime*.001+i)*12)%W,170+(uiTime*.027+i*37)%(H-170),2,2,'#ffffff88');
- if(k===3){for(let i=0;i<5;i++)sprite('fluent/gem_stone.png',20+i*88,f.top-64+(i%2)*18,45,45,false,.45);}
+ cx.fillStyle='#bdd5a5';cx.fillRect(0,0,W,H);
+ if(!assetsReady)return;
+ const z=worldOf(town).zone,f=field();
+ for(let yy=0;yy<H;yy+=32)for(let xx=0;xx<W;xx+=32)tile('grass11',xx,yy);
+ cx.save();cx.globalAlpha=.45;cx.fillStyle=['#a1c4a0','#c5d9a2','#a8d8ce','#adbbd7','#dce8e7','#d9d4ef','#c4d5e9'][z];cx.fillRect(0,0,W,H);cx.restore();
+ if(z===2||z===5||z===6){
+  for(let yy=184;yy<f.top-28;yy+=32)for(let xx=0;xx<W;xx+=32)tile('water'+Math.floor(uiTime/330)%4,xx,yy);
+ }
+ for(let i=0;i<10;i++){const xx=(i*79+17)%W,yy=185+(i*123)%(H-195);if(xx<22||xx>362)pixel(i%2?'grassTuft':'flowerPink',xx,yy,32,32);}
+ for(const [xx,yy,k]of [[4,213,'tree'],[383,234,'treeSlim'],[8,H-31,'treeSlim'],[382,H-7,'tree']])pixel(k,xx,yy,96,96);
+ if(z===4)for(let i=0;i<18;i++){cx.fillStyle='#ffffffbb';cx.fillRect(Math.round((i*71+Math.sin(uiTime*.001+i)*10)%W),Math.round(173+(uiTime*.022+i*37)%(H-180)),3,3);}
+ if(time<town.feverUntil){cx.fillStyle='#ffe99324';cx.fillRect(0,170,W,H-255);for(let i=0;i<8;i++)pixel('star',(i*77+time*.025)%W,185+(i*91+time*.036)%(H-270),16,16);}
 };
 
 
@@ -844,7 +934,7 @@ introScreen=function(){background();sprite('fluent/house_with_garden.png',195,H*
  const py=H*.48;panel(34,py,322,127);text('爷爷留下了一枚硬币，也留下了一张地图。',195,py+29,13,C.ink,'center');wrap('从庭院出发，去果园、河湾和云岛。\n结识朋友，把每次叮当声，\n变成属于你和栗栗的新故事。',195,py+55,289,12,'#8b7553',23,'center');squirrel(300,py+130,.86,uiTime*.005,1);
  if(assetsReady)button('start',town.s.started?'带着好运，继续旅行':'翻开第一枚金币',43,H-124,304,49,start,{green:true,size:18});
  else{meter(52,H-113,285,9,assetsProgress/4,'green');text(assetsFailed?'图片还没接回来，轻触重试':'正在装好栗栗的旅行背包……',195,H-85,12,C.ink,'center');if(assetsFailed)addHit('retryArt',42,H-130,306,69,loadSprites);}
- text('世界旅行 4.0 · 免费素材鸣谢见设置',195,H-40,10,'#7e8063','center');
+ text('像素旅行 5.0 · 免费素材鸣谢见设置',195,H-40,10,'#7e8063','center');
 };
 handleEvents=function(events){oldEvents(events);const result=events.find(e=>e.kind==='routeResult')?.result;if(result){modal={kind:'routeResult',result,at:uiTime};hold=-1;save();sfx(result.win?'win':'tap');if(result.win){flyReward(195,field().top+85,result.reward);burst(195,field().top+80,45);}}};
 modalScreen=function(){const kind=modal?.kind;if(!['travelStory','worldUpgrade','routeResult','routeExit','journey','companions','credits','help'].includes(kind)){oldModal();if(kind==='settings'){const h=463,y=(H-h)/2;hits=hits.filter(h=>!['help','restart'].includes(h.id));button('help','怎么玩',43,y+285,94,42,()=>{modal={kind:'help',at:uiTime};},{size:11});button('credits','素材鸣谢',148,y+285,94,42,()=>{modal={kind:'credits',at:uiTime};},{size:11});button('restart','重新开始',253,y+285,94,42,()=>{modal={kind:'reset',at:uiTime};},{size:11});}return;}
@@ -878,5 +968,95 @@ drawWorld=function(){const w=worldOf(town);if(w.zone===0)return gardenWorld();
  if(town.visitor){const p=visitorPos();bird(p.x,p.y,.8);labelPill('点我 · 小奇遇',p.x,p.y+38,90,'#e4e8ce');addHit('visitor',p.x-33,p.y-31,66,81,catchVisitor);}
 };
 
+
+drawWorld=function(){
+ const w=worldOf(town),s=town.s,z=ZONES[w.zone],f=field(),base=f.top-34;
+ text(z.name,23,173,11,'#4c7161');text(town.buff?'好运小雨':time<town.feverUntil?'金叶风 · 收益 ×2':z.weather,366,173,10,'#587b6c','right');
+ for(let i=0;i<9;i++)tile('fence'+(i%2),21+i*40,base+1,32,32);
+ if(w.zone===0){
+  house(76,base+5,.86,s.land>=1);tower(198,base+5,.73,s.clock);pixel('tree',285,base-13,96,96);
+  hero(254,base+19,.95,s.dig>0);
+ }else if(w.zone===1){
+  pixel('treeFruit',70,base-23,112,112);pixel('treeFruit',272,base-23,112,112);pixel('bushFruit',122,base+14,48,48);hero(192,base+9,1);
+ }else if(w.zone===2){
+  tilePatch('grass',34,base-60,96,76);house(85,base+5,.77,true);pixel('bridge',195,base+5,110,64);hero(268,base+13,1);pixel('lily',319,base+18,32,32);
+ }else if(w.zone===3){
+  for(let i=0;i<6;i++)pixel('rock',35+i*61,base-8-(i%2)*10,48,48);
+  for(let i=0;i<4;i++)pixel('gem'+(i%4)+'_'+Math.floor(uiTime/160)%6,80+i*59,base-22,32,32);
+  hero(196,base+20,1,true);pixel('pick',287,base-29,48,48);
+ }else if(w.zone===4){
+  for(let i=0;i<3;i++){pixel('treeSlim',59+i*124,base-18,80,100);cx.fillStyle='#edf6dd';cx.fillRect(42+i*124,Math.round(base-55),32,5);}
+  hero(185,base+18,1);pixel('cow00',276,base+15,64,64);
+ }else if(w.zone===5){
+  for(let i=0;i<3;i++){const yy=base-25+Math.round(Math.sin(uiTime*.0015+i)*5);tilePatch('grass',21+i*119,yy,102,56);pixel('sunflower',67+i*119,yy+5,32,64);}
+  hero(192,base+4,1);pixel('star',192,base-58,32,32);
+ }else{
+  tilePatch('grass',34,base-48,322,82);tower(196,base+12,.92,true);pixel('gem0_'+Math.floor(uiTime/160)%6,83,base-6,48,48);hero(298,base+13,1);
+ }
+ if(!s.pet){squirrel(129,base+18,.65,uiTime*.005,1);if(s.tool){labelPill('栗栗想来帮忙',304,base+22,119);addHit('recruitHint',245,base-11,120,56,()=>switchPage('pet'));}}
+ if(s.dig){
+  const stage=5-s.dig,x=320,y=f.top-32;
+  pixel('rock',x,y+15,64,48);pixel('chest'+Math.min(3,stage),x,y-8,64,48,false,stage<2?.5:1);
+  text(s.dig===1?'最后一铲！':'拨开泥土 '+stage+'/5',x,y+39,10,'#4e715c','center');addHit('dig',270,y-37,103,82,dig);
+ }else if(s.pet){
+  icon(s.clock?'clock':'chest',322,base-16,38);text(s.clock?'旅行继续':s.land>=2?'等一声钟响':'树根的秘密',322,base+27,9,'#526d5d','center');
+  addHit('exploreHint',273,base-50,98,85,()=>{shopTab='explore';switchPage('tools');});
+ }
+ if(town.visitor){const p=visitorPos();bird(p.x,p.y,.8);labelPill('点我 · 小奇遇',p.x,p.y+35,90);addHit('visitor',p.x-33,p.y-31,66,81,catchVisitor);}
+};
+introScreen=function(){
+ background();
+ const village=H*.37;
+ tilePatch('dirt',27,village-39,336,82);
+ for(let i=0;i<8;i++)tile('fence'+(i%2),27+i*44,village+29,32,32);
+ pixel('treeFruit',36,village-24,112,112);pixel('tree',351,village-19,112,112);
+ house(142,village+12,1.25,true);hero(233,village+33,1.4);squirrel(285,village+25,1.05,uiTime*.008,1);
+ coin(238,village-35,24,'copper',(uiTime%2200)/2200);
+ text('翻 金 镇',195,H*.13,49,'#fff8df','center',900,5);
+ text('栗栗的金币庭院',195,H*.13+49,19,'#4e715e','center');
+ labelPill('一枚硬币，翻出一座温柔的小镇',195,H*.13+87,275);
+ const py=H*.5;panel(34,py,322,139);
+ text('爷爷留下了一枚硬币，也留下一张地图。',195,py+29,13,C.ink,'center');
+ wrap('栗栗喜欢每一声叮当。\n从庭院出发，走过果园、河湾和云岛，\n把藏在土地里的故事，一页页翻开。',195,py+62,284,12,'#758673',24,'center');
+ pixel('sunflower',52,py+103,32,64);pixel('sunflower',336,py+103,32,64);
+ if(assetsReady)button('start',town.s.started?'回到庭院，继续旅行':'翻开第一枚金币',43,H-124,304,49,start,{green:true,size:18});
+ else{meter(52,H-113,285,9,assetsProgress,'green');text(assetsFailed?'图片加载失败，轻触重试':'正在铺好草地、装好金币……',195,H-85,12,C.ink,'center');if(assetsFailed)addHit('retryArt',42,H-130,306,69,loadSprites);}
+ text('Sprout Lands × Coins & Gems · 像素旅行 5.0',195,H-41,9,'#678b73','center');
+};
+const sproutModal=modalScreen;
+modalScreen=function(){
+ if(modal?.kind!=='credits'){sproutModal();return;}
+ hits=[];scrollArea=null;hold=-1;cx.fillStyle='#3b6153cc';cx.fillRect(0,0,W,H);
+ const h=520,y=(H-h)/2;panel(22,y,346,h);
+ text('给小镇画上颜色的人',195,y+36,21,C.ink,'center');
+ pixel('treeFruit',83,y+111,80,80);hero(193,y+129,1.4);squirrel(279,y+124,1.3,uiTime*.008,1);
+ wrap('Sprout Lands · Basic Pack\nCup Nooble\n场景、角色、动物与工具\n免费 Basic 版：仅限非商业项目\ncupnooble.itch.io/sprout-lands-asset-pack\n\nCoins & Gems & Chests & More\ngreatdocbrown · CC0\n金币、宝石、宝箱与奖励动画\ngreatdocbrown.itch.io/coins-gems-etc\n\n游戏所需图片已打包在本地。\nCanvas 绘制界面；旧存档继续可用。',195,y+185,312,11,'#718270',23,'center');
+ button('creditsOK','带着这份颜色，继续',46,y+h-57,298,39,()=>{modal={kind:'settings',at:uiTime};},{green:true,size:13});
+};
+
+drawField=function(){
+ const s=town.s,f=field(),height=f.bottom-f.top+6;
+ tilePatch('dirt',19,f.top-2,352,height);
+ for(let i=0;i<town.capacity();i++){const p=pos(i);if(i>=s.coins.length){ellipse(p.x,p.y+3,19,13,'#b28a5450');cx.save();cx.setLineDash([3,4]);ellipse(p.x,p.y,18,15,'#edd3a32b','#9a79464a',1);cx.restore();}}
+ for(let i=0;i<s.coins.length;i++){
+  const p=pos(i),dt=time-flipTimes[i],phase=dt>=0&&dt<420?dt/420:0,ready=time>=town.cd[i],reserved=town.petFlight?.i===i,shiny=town.shiny?.i===i;
+  const age=time-coinBorn[i],born=age>=0&&age<500?Math.min(1.1,Math.max(.1,age/300))*(1+Math.sin(age*.012)*.03):1,r=s.coins.length===1?37:24;
+  if(shiny){rays(p.x,p.y,48,.18);ellipse(p.x,p.y,31+Math.sin(uiTime*.008)*2,25,'#fff4b329','#fff5b6',1.5);star(p.x+25,p.y-24,6,'#fff5cf','#b68d39');labelPill('闪光 ×3',p.x,p.y-38,63,'#fff0a5');}
+  cx.save();cx.translate(p.x,p.y);cx.scale(born,born);if(ready){cx.shadowColor=shiny?'#fff8c9':time<town.feverUntil?'#ffe49a':s.coins[i]==='copper'?'#ffc94f77':'#fff3c5';cx.shadowBlur=shiny?18:ready?6:0;}
+  coin(0,Math.sin(uiTime*.002+i)*.9,r,s.coins[i],phase,ready&&!reserved);cx.restore();
+  if(!ready){const cd=town.cd[i],duration=town.cooldown();cx.beginPath();cx.arc(p.x,p.y,r+4,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.max(0,Math.min(1,1-(cd-time)/duration)));cx.strokeStyle='#fff3cdbb';cx.lineWidth=2;cx.stroke();}
+  if(reserved){ellipse(p.x+18,p.y-21,8,8,'#dce8b8',C.ink,1);ellipse(p.x+18,p.y-19,3,2.5,'#74915c');for(let j=0;j<3;j++)ellipse(p.x+14+j*4,p.y-24,1.5,1.7,'#74915c');}
+ }
+ const nest={x:43,y:f.bottom-3};pixel('nest',nest.x,nest.y-2,32,32);
+ if(s.pet){
+  const v=petVisual,k=Math.max(0,Math.min(1,(time-v.start)/Math.max(1,v.end-v.start))),e=k*k*(3-2*k);v.x=v.fromX+(v.toX-v.fromX)*e;v.y=v.fromY+(v.toY-v.fromY)*e;
+  const moving=k<1,hop=moving?-Math.sin(k*Math.PI)*16:time<petCheer?-Math.abs(Math.sin(time*.015))*4:Math.sin(uiTime*.003)*1.4;
+  squirrel(v.x,v.y+hop,.6,moving?time*.025:uiTime*.003,s.pet,v.toX<v.fromX);
+  if(time-lastPetHit<700)text('叮！',v.x,v.y-43-(time-lastPetHit)*.018,13,'#fff2ac','center',800,2);
+  if(time-feedAnim<1300){acorn(v.x+16,v.y-9,6);text('♥',v.x,v.y-48-(time-feedAnim)*.01,19,'#e8aa8a','center',700,1);}
+ }
+ if(town.buff?.kind==='rain'){for(let j=0;j<22;j++){const x=23+(j*73)%344,y=f.top+((time*.23+j*37)%(height-13));line(x,y,x-2,y+7,'#eefaff7a',1);if(j%5===0)ellipse(x,f.bottom-12,5+(time*.009+j)%4,2,'#fff8da22','#d5e3b477',1);}}
+ flower(20,f.top+14,.45,'#fff0bd');flower(370,f.bottom-2,.5,'#e8b19a');
+};
 requestAnimationFrame(frame);
 </script></body></html>
