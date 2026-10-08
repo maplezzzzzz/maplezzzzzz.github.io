@@ -15,7 +15,7 @@ class Town{
  petCost(){return this.s.pet===0?120:[0,180,400,850,1600,2800,4500][this.s.pet]||Infinity;}
  powerCost(){return Math.round(110*Math.pow(2.35,this.s.power-1));}
  landCost(){return [220,1000,3400][this.s.land]||Infinity;}
- gain(n,pet=false){this.s.gold+=n;this.s.total+=n;if(pet)this.s.petGold+=n;}
+ gain(n,pet=false){if(!Number.isFinite(n)||n<=0)return 0;n=Math.min(Math.floor(n),1e12-this.s.gold,1e13-this.s.total);if(!Number.isFinite(n)||n<=0)return 0;this.s.gold+=n;this.s.total+=n;if(pet)this.s.petGold+=n;return n;}
  pay(n){if(!Number.isFinite(n)||this.s.gold<n)return false;this.s.gold-=n;return true;}
  buy(id){let s=this.s;
  if(id==='coin'&&s.coins.length<this.capacity()&&this.pay(this.coinCost())){s.coins.push('copper');return true;}
@@ -27,7 +27,7 @@ class Town{
  if(id==='land'&&s.tool>=1&&s.pet>=1&&s.land<3&&!s.dig&&(s.land===0||s.tool>=2)&&this.pay(this.landCost())){s.dig=5;return true;}
  if(id==='clock'&&s.pet>=3&&s.land>=2&&!s.clock&&this.pay(8800)){s.clock=true;return true;}return false;
  }
- dig(){if(!this.s.dig)return null;this.s.dig--;if(this.s.dig)return {remaining:this.s.dig};this.s.land++;this.s.coins.push('copper',['','clover','sun','royal'][this.s.land]);let bonus=[0,65,170,420][this.s.land];this.gain(bonus);return {remaining:0,land:this.s.land,type:this.s.coins.at(-1),bonus};}
+ dig(){if(!this.s.dig||this.s.land>=3)return null;this.s.dig--;if(this.s.dig)return {remaining:this.s.dig};this.s.land++;this.s.coins.push('copper',['','clover','sun','royal'][this.s.land]);let bonus=[0,65,170,420][this.s.land],surprise=Math.random()<.28?Math.max(1,Math.floor(bonus*(.2+Math.random()*.2))):0;const amount=this.gain(bonus+surprise);surprise=Math.min(surprise,Math.max(0,amount-bonus));const stories=['','栗栗翻开爷爷的手记：“好运要和朋友分享。”','树根下露出旧街石板。爷爷说，钟楼齿轮就藏在古树根下。','最后一块齿轮擦亮后，远处的钟楼传来一声轻轻的回响。'];return {remaining:0,land:this.s.land,type:this.s.coins.at(-1),bonus,surprise,amount,story:stories[this.s.land]};}
  cooldown(){return this.s.clock?800:1250;}
  value(i){return TYPES[this.s.coins[i]].value*this.s.power;}
  flip(i,t,source='hand',boost=1){if(!this.s.coins[i]||t<this.cd[i]||(source!=='pet'&&this.petFlight&&this.petFlight.i===i))return null;this.cd[i]=t+this.cooldown();let fever=t<this.feverUntil;
@@ -36,9 +36,9 @@ class Town{
  }
  targets(i){if(!SLOTS[i])return [];let [x,y]=SLOTS[i],n=this.s.coins.length,ids=Array.from({length:n},(_,j)=>j);if(this.s.tool===0)return[i];if(this.s.tool===1)return ids.sort((a,b)=>((SLOTS[a][0]-x)**2+(SLOTS[a][1]-y)**2)-((SLOTS[b][0]-x)**2+(SLOTS[b][1]-y)**2)).slice(0,3);if(this.s.tool===2)return ids.filter(j=>SLOTS[j][1]===y);return ids.filter(j=>Math.abs(SLOTS[j][0]-x)<=1&&Math.abs(SLOTS[j][1]-y)<=1);}
  swing(i,t){return this.targets(i).map(j=>this.flip(j,t)).filter(Boolean);}
- skill(t){if(this.s.tool<2||t<this.skillAt)return[];const ids=this.s.coins.map((_,i)=>i).filter(i=>t>=this.cd[i]);if(!ids.length)return[];this.skillAt=t+(this.s.tool>=3?10000:18000);return ids.map(i=>this.flip(i,t,'skill',2)).filter(Boolean);}
- tick(t){this.activeTime=t;const events=[];if(this.chain&&t-this.lastHit>2100&&t>=this.feverUntil)this.chain=0;if(this.petFlight&&t>=this.petFlight.arrive){const i=this.petFlight.i;if(t<this.cd[i]){this.petFlight.arrive=this.cd[i];return events;}const hit=this.flip(i,t,'pet');this.petFlight=null;this.petAt=t+Math.max(120,PET_MS[this.s.pet]-Math.min(650,PET_MS[this.s.pet]*.65));if(hit)events.push({kind:'petHit',hit});}
- if(this.s.pet&&!this.petFlight&&t>=this.petAt){let n=this.s.coins.length,chosen=-1;for(let j=0;j<n;j++){let i=(this.petCursor+j)%n;if(t>=this.cd[i]){chosen=i;break;}}if(chosen>=0){this.petCursor=(chosen+1)%n;this.petFlight={i:chosen,start:t,arrive:t+Math.min(650,PET_MS[this.s.pet]*.65)};events.push({kind:'petGo',i:chosen});}else this.petAt=t+180;}return events;}
+ skill(t){if(this.s.tool<2||t<this.skillAt)return[];const ids=this.s.coins.map((_,i)=>i).filter(i=>t>=this.cd[i]&&!(this.petFlight&&this.petFlight.i===i));if(!ids.length)return[];const hits=ids.map(i=>this.flip(i,t,'skill',2)).filter(Boolean);if(hits.length)this.skillAt=t+(this.s.tool>=3?10000:18000);return hits;}
+ tick(t){this.activeTime=t;const events=[];if(this.chain&&t-this.lastHit>2100&&t>=this.feverUntil)this.chain=0;if(this.petFlight&&t>=this.petFlight.arrive){const i=this.petFlight.i;if(this.petFlight.arrive<this.cd[i]){this.petFlight.arrive=this.cd[i];return events;}const arrived=this.petFlight.arrive,hit=this.flip(i,arrived,'pet');this.petFlight=null;this.petAt=arrived+Math.max(120,PET_MS[this.s.pet]-Math.min(650,PET_MS[this.s.pet]*.65));if(hit)events.push({kind:'petHit',hit});}
+ if(this.s.pet&&!this.petFlight&&t>=this.petAt){let n=this.s.coins.length,chosen=-1;for(let j=0;j<n;j++){let i=(this.petCursor+j)%n;if(t>=this.cd[i]){chosen=i;break;}}if(chosen>=0){this.petCursor=(chosen+1)%n;const start=this.petAt;this.petFlight={i:chosen,start,arrive:start+Math.min(650,PET_MS[this.s.pet]*.65)};events.push({kind:'petGo',i:chosen});}else this.petAt=t+180;}return events;}
  goals(){let s=this.s;return[
  {title:'让第一枚硬币醒来',hint:'翻动硬币 8 次',now:s.manual,max:8,reward:12},
  {title:'好运，要成群结伴',hint:'拥有 3 枚硬币',now:s.coins.length,max:3,reward:20},
@@ -53,14 +53,15 @@ class Town{
  ];}
  goalIndex(){return this.goals().findIndex((g,i)=>!this.s.claimed.includes(i));}
  claim(){let i=this.goalIndex(),q=this.goals()[i];if(!q||q.now<q.max)return null;this.s.claimed.push(i);this.gain(q.reward);return q;}
- offline(seconds){if(!this.s.pet)return 0;let n=Math.min(7200,Math.max(0,seconds)),avg=this.s.coins.reduce((v,c)=>v+TYPES[c].value,0)/this.s.coins.length*this.s.power,amount=Math.floor(n/(PET_MS[this.s.pet]/1000)*avg*.5);this.gain(amount,true);return amount;}
+ offline(seconds){if(!this.s.pet||!Number.isFinite(seconds))return 0;let n=Math.min(7200,Math.max(0,seconds)),avg=this.s.coins.reduce((v,c)=>v+TYPES[c].value,0)/this.s.coins.length*this.s.power,amount=Math.floor(n/(PET_MS[this.s.pet]/1000)*avg*.5);return this.gain(amount,true);}
 }
 function validV2(s){if(!s||s.v!==2)return false;for(let [k,lo,hi] of [['gold',0,1e12],['total',0,1e13],['manual',0,1e10],['petGold',0,1e13],['petFlips',0,1e10],['tool',0,3],['power',1,6],['land',0,3],['dig',0,5],['pet',0,7],['seconds',0,1e10],['lastSeen',0,1e16]])if(!Number.isFinite(s[k])||s[k]<lo||s[k]>hi)return false;
  if(!['tool','power','land','dig','pet','manual','petFlips'].every(k=>Number.isInteger(s[k])))return false;
  if(!['clock','started','sound','music','haptic'].every(k=>typeof s[k]==='boolean'))return false;
- if(!Array.isArray(s.coins)||!s.coins.length||s.coins.length>8+s.land*4||s.coins.some(t=>!TYPES[t]))return false;
- if(!Array.isArray(s.claimed)||s.claimed.length>10||new Set(s.claimed).size!==s.claimed.length||s.claimed.some(i=>!Number.isInteger(i)||i<0||i>9))return false;
- if(s.pet&&!s.tool||s.land&&!s.pet||s.clock&&(s.pet<3||s.land<2))return false;return true;}
+ if(s.total<s.gold||s.petGold>s.total)return false;
+ if(!Array.isArray(s.coins)||!s.coins.length||s.coins.length>8+s.land*4||s.coins.some(t=>typeof t!=='string'||!Object.prototype.hasOwnProperty.call(TYPES,t)))return false;
+ if(!Array.isArray(s.claimed)||s.claimed.length>10||s.claimed.some((i,n)=>!Number.isInteger(i)||i!==n))return false;
+ if(s.pet&&!s.tool||s.tool&&s.coins.length<3||s.land&&!s.pet||s.tool>=2&&s.land<1||s.tool>=3&&s.land<2||s.dig&&(s.land>=3||!s.tool||!s.pet)||s.clock&&(s.pet<3||s.land<2))return false;return true;}
 
 
 const C={ink:'#664323',dark:'#55381f',cream:'#fff1c3',gold:'#f6c851',green:'#668b47',green2:'#99bb64',brown:'#b87838',paper:'#f7e3ad',shadow:'#583916',white:'#fff9dd'};
@@ -111,8 +112,14 @@ function labelPill(label,x,y,w=100,color='#f1d392'){box(x-w/2,y-12,w,24,color,C.
 
 const canvas=document.getElementById('game'),cx=canvas.getContext('2d',{alpha:false}),W=390;
 let H=844,scale=1,ox=0,oy=0,dpr=1,screenW=390,screenH=844;
-let town,storageOK=true,loaded=null,oldMigrated=false;
-try{const s=JSON.parse(localStorage.getItem('flipgold-mobile-v2')||'null');if(validV2(s))loaded=s;else{let old=JSON.parse(localStorage.getItem('flipgold-town-v1')||'null');if(old&&old.v===1&&Array.isArray(old.coins)&&old.coins.length<=20&&Number.isFinite(old.gold)){let s=new Town().s;s.gold=Math.max(0,old.gold);s.total=Math.max(s.gold,old.total||0);s.manual=old.flips||0;s.coins=old.coins.map(c=>TYPES[c.type]?c.type:'copper');s.tool=Math.min(2,old.tool||0);s.power=Math.max(1,Math.min(6,old.power||1));s.land=Math.min(3,old.land||0);s.pet=s.tool?Math.max(s.land?1:0,Math.min(7,(old.auto||0)*2)):0;s.clock=!!old.clock&&s.pet>=3&&s.land>=2;s.started=!!old.started;s.sound=old.sound!==false;s.music=old.music!==false;if(validV2(s)){loaded=s;oldMigrated=true;}}}}catch(e){storageOK=false;}
+const STORE_KEY='flipgold-mobile-v2',LOCK_KEY='flipgold-mobile-v2-lock',TAB_ID=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
+let town,storageOK=true,loaded=null,oldMigrated=false,lockOwned=false,lockBlocked=false,lastOwnSave=null;
+function acquireLock(){try{const raw=localStorage.getItem(LOCK_KEY);let lock=null;try{lock=raw?JSON.parse(raw):null;}catch(e){}if(lock&&lock.owner!==TAB_ID&&Number.isFinite(lock.until)&&lock.until>Date.now())return false;localStorage.setItem(LOCK_KEY,JSON.stringify({owner:TAB_ID,until:Date.now()+30000}));lockOwned=JSON.parse(localStorage.getItem(LOCK_KEY)||'null')?.owner===TAB_ID;return lockOwned;}catch(e){storageOK=false;lockOwned=true;return true;}}
+function refreshLock(){if(!storageOK)return true;if(!lockOwned)return false;try{const lock=JSON.parse(localStorage.getItem(LOCK_KEY)||'null');if(lock?.owner!==TAB_ID)return false;localStorage.setItem(LOCK_KEY,JSON.stringify({owner:TAB_ID,until:Date.now()+30000}));return JSON.parse(localStorage.getItem(LOCK_KEY)||'null')?.owner===TAB_ID;}catch(e){storageOK=false;return true;}}
+function releaseLock(){if(!lockOwned)return;try{const lock=JSON.parse(localStorage.getItem(LOCK_KEY)||'null');if(lock?.owner===TAB_ID)localStorage.removeItem(LOCK_KEY);}catch(e){}lockOwned=false;}
+lockOwned=acquireLock();lockBlocked=!lockOwned;
+try{lastOwnSave=localStorage.getItem(STORE_KEY);}catch(e){storageOK=false;}
+try{const s=JSON.parse(localStorage.getItem(STORE_KEY)||'null');if(validV2(s))loaded=s;else{let old=JSON.parse(localStorage.getItem('flipgold-town-v1')||'null');if(old&&old.v===1&&Array.isArray(old.coins)&&old.coins.length<=20&&Number.isFinite(old.gold)){let s=new Town().s;s.gold=Math.max(0,old.gold);s.total=Math.max(s.gold,old.total||0);s.manual=old.flips||0;s.coins=old.coins.map(c=>c&&typeof c==='object'&&Object.prototype.hasOwnProperty.call(TYPES,c.type)?c.type:'copper');s.tool=Math.min(2,old.tool||0);s.power=Math.max(1,Math.min(6,old.power||1));s.land=Math.min(3,old.land||0);if(s.tool>=2&&s.land===0)s.tool=1;s.pet=s.tool?Math.max(s.land?1:0,Math.min(7,(old.auto||0)*2)):0;s.clock=!!old.clock&&s.pet>=3&&s.land>=2;s.started=!!old.started;s.sound=old.sound!==false;s.music=old.music!==false;if(validV2(s)){loaded=s;oldMigrated=true;}}}}catch(e){storageOK=false;}
 town=new Town(loaded);
 let page='home',shopTab='tools',scroll=0,maxScroll=0,scrollArea=null,modal=null,hits=[],time=0,frameLast=0,started=false,paused=false,intro=true,hold=-1,holdAt=0,pointer=null,hoverCoin=-1,toastState=null,displayGold=town.s.gold,bankPulse=0,screenShake=0,lastSave=0,audio=null,focused=-1;
 let particles=[],floaters=[],flying=[],ripples=[],swings=[],flipTimes=new Array(20).fill(-1e5),petVisual={x:72,y:570,fromX:72,fromY:570,toX:72,toY:570,start:0,end:1},lastPetHit=-10000,petCheer=0,feverNotified=0;
@@ -133,8 +140,9 @@ function button(id,label,x,y,w,h,action,opt={}){const enabled=opt.enabled!==fals
 }
 function circleButton(id,name,x,y,r,action,enabled=true){ellipse(x,y+3,r,r,'#694b29',C.ink,2);ellipse(x,y,r,r,enabled?grad(y-r,r*2,'#ffe7b0','#d6ae69'):'#bbae8b',C.ink,2.5);icon(name,x,y,r*1.15);addHit(id,x-r,y-r,r*2,r*2,action,enabled);}
 function toast(msg){toastState={msg,until:time+3200};}
-function save(){town.s.lastSeen=Date.now();try{localStorage.setItem('flipgold-mobile-v2',JSON.stringify(town.s));storageOK=true;}catch(e){storageOK=false;}}
-let offlineGold=0;if(loaded){offlineGold=town.offline((Date.now()-town.s.lastSeen)/1000);town.s.lastSeen=Date.now();displayGold=town.s.gold;}
+function save(){if(lockBlocked||!refreshLock()){lockOwned=false;lockBlocked=true;return false;}town.s.lastSeen=Date.now();try{const raw=JSON.stringify(town.s);localStorage.setItem(STORE_KEY,raw);lastOwnSave=raw;storageOK=true;return true;}catch(e){storageOK=false;return false;}}
+function lockScreen(){hits=[];cx.fillStyle='#263d2dcc';cx.fillRect(0,0,W,H);const y=H*.36;panel(24,y,342,205);icon('gear',195,y+45,42);text('栗栗正在另一处庭院忙碌',195,y+94,18,C.ink,'center',800);wrap('这个页面已暂停，避免旧进度覆盖新进度。刷新后就能接着玩。',195,y+126,286,12,'#8b6b3d',20,'center');button('lockRefresh','刷新载入最新进度',51,y+158,288,39,()=>window.location.reload(),{green:true,size:14});}
+let offlineGold=0;if(loaded&&!lockBlocked){offlineGold=town.offline((Date.now()-town.s.lastSeen)/1000);town.s.lastSeen=Date.now();displayGold=town.s.gold;}
 class Sounds{
  constructor(){const A=window.AudioContext||window.webkitAudioContext;if(!A)return;try{this.ctx=new A();this.master=this.ctx.createGain();this.master.gain.value=.43;this.master.connect(this.ctx.destination);this.next=0;this.step=0;this.lastCoin=-1;this.lastBank=-1;this.timer=setInterval(()=>this.music(),120);}catch(e){}}
  resume(){this.ctx?.resume().catch(()=>{});}
@@ -153,7 +161,7 @@ class Sounds{
 function wakeAudio(){if(!audio)audio=new Sounds();audio.resume();}
 function sfx(k,n){audio?.fx(k,n);}
 function vibe(ms=8){if(town.s.haptic&&navigator.vibrate)navigator.vibrate(ms);}
-function start(){intro=false;started=true;town.s.started=true;wakeAudio();sfx('unlock');save();if(offlineGold){modal={kind:'offline',amount:offlineGold};offlineGold=0;}else if(oldMigrated){toast('已接回旧庭院存档，小松鼠也来帮忙啦！');}else if(!town.s.manual)toast('点一下硬币，看看会发生什么。');}
+function start(){if(lockBlocked)return;intro=false;started=true;town.s.started=true;wakeAudio();sfx('unlock');save();if(offlineGold){modal={kind:'offline',amount:offlineGold};offlineGold=0;}else if(oldMigrated){toast('已接回旧庭院存档，小松鼠也来帮忙啦！');}else if(!town.s.manual)toast('点一下硬币，看看会发生什么。');}
 function switchPage(p){hold=-1;page=p;scroll=0;focused=-1;sfx('tap');}
 function showUpgrade(iconName,title,desc){modal={kind:'upgrade',icon:iconName,title,desc};hold=-1;sfx('unlock');vibe(24);}
 function buy(id){wakeAudio();if(!town.buy(id)){toast('还差一点金币，继续翻一翻！');return;}displayGold=Math.min(displayGold,town.s.gold);sfx('unlock');save();if(id==='shovel')showUpgrade('shovel','一铲，三份好运！','点击一枚硬币，会连带翻动最近的两枚。\n小松鼠栗栗也可以来帮忙了！');else if(id==='pet'){if(town.s.pet===1){petVisual.x=30;petVisual.y=H*.58;showUpgrade('pet','栗栗加入寻宝！','每 4 秒帮你翻 1 枚硬币。\n它会自己寻找目标，让金币慢慢积累。');}else{petCheer=time+2200;toast('栗栗跑得更快啦！每 '+(PET_MS[town.s.pet]/1000)+' 秒翻 1 枚');}}
@@ -165,7 +173,7 @@ function buy(id){wakeAudio();if(!town.buy(id)){toast('还差一点金币，继�
  else if(id==='clock'){modal={kind:'victory'};sfx('win');burst(W/2,200,100);vibe(40);}
 }
 function claim(){const q=town.claim();if(!q)return;const x=325,y=130;for(let i=0;i<8;i++)flyCoin(x,y,q.reward/8,i*.04);floatText(195,175,'目标完成 +'+q.reward,'#fff2a2',22);sfx('unlock');save();}
-function dig(){let r=town.dig();if(!r)return;sfx('dig');vibe(10);burst(318,H*.37,15,true);ripples.push({x:318,y:H*.37,start:time,color:'#ffe9a2'});if(!r.remaining){modal={kind:'treasure',type:r.type,amount:r.bonus};sfx('win');vibe(25);burst(195,H*.48,70);}save();}
+function dig(){let r=town.dig();if(!r)return;sfx('dig');vibe(10);burst(318,H*.37,15,true);ripples.push({x:318,y:H*.37,start:time,color:'#ffe9a2'});if(!r.remaining){modal={kind:'treasure',type:r.type,amount:r.amount,baseBonus:r.bonus,surprise:r.surprise,story:r.story};sfx('win');vibe(25);burst(195,H*.48,70);if(r.surprise)floatText(195,H*.45,'栗栗找到额外金币 +'+r.surprise,'#fff1a0',18);}save();}
 function burst(x,y,n=12,earth=false){for(let i=0;i<n;i++){let a=Math.random()*Math.PI*2,v=30+Math.random()*95;particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-30,life:.4+Math.random()*.6,max:1,size:2+Math.random()*3,color:earth?['#b27c3c','#dcad61','#82552c'][i%3]:['#ffedac','#edbb44','#fff6d4'][i%3],angle:Math.random()*6});}if(particles.length>220)particles.splice(0,particles.length-220);}
 function floatText(x,y,t,color='#fff4b8',size=22){floaters.push({x,y,text:t,color,size,start:time});if(floaters.length>25)floaters.shift();}
 function flyCoin(x,y,value,delay=0,type='copper'){flying.push({x,y,value,start:time+delay*1000,duration:600+Math.random()*220,bend:(Math.random()-.5)*150,type});if(flying.length>100)flying.shift();}
@@ -180,16 +188,17 @@ function useSkill(){const rs=town.skill(time);if(!rs.length){toast(time<town.ski
 function sceneHit(x,y){let nearest=-1,dist=Infinity;for(let i=0;i<town.s.coins.length;i++){const p=pos(i),d=Math.hypot(p.x-x,p.y-y);if(d<dist&&d<(town.s.coins.length===1?47:town.s.tool>=3?60:32)){dist=d;nearest=i;}}return nearest;}
 function point(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left-ox)/scale,y:(e.clientY-r.top-oy)/scale};}
 function hitAt(x,y){return hits.slice().reverse().find(h=>x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h);}
-canvas.addEventListener('pointerdown',e=>{e.preventDefault();wakeAudio();canvas.focus();const p=point(e),hit=hitAt(p.x,p.y);pointer={...p,lastX:p.x,lastY:p.y,id:hit?.id,scrolled:false};try{canvas.setPointerCapture(e.pointerId);}catch(e){}if(!hit&&!intro&&!modal&&page==='home'){const i=sceneHit(p.x,p.y);if(i>=0){hold=i;holdAt=time;doSwing(i);}}});
+canvas.addEventListener('pointerdown',e=>{e.preventDefault();if(!lockBlocked)wakeAudio();canvas.focus();const p=point(e),hit=hitAt(p.x,p.y);pointer={...p,lastX:p.x,lastY:p.y,id:hit?.id,scrolled:false};try{canvas.setPointerCapture(e.pointerId);}catch(e){}if(!hit&&!intro&&!modal&&page==='home'){const i=sceneHit(p.x,p.y);if(i>=0){hold=i;holdAt=time;doSwing(i);}}});
 canvas.addEventListener('pointermove',e=>{if(!pointer)return;const p=point(e),dy=p.y-pointer.lastY;if(scrollArea&&p.y>=scrollArea.y&&p.y<=scrollArea.y+scrollArea.h&&page!=='home'&&!modal&&Math.abs(p.y-pointer.y)>7){scroll=Math.max(0,Math.min(maxScroll,scroll-dy));pointer.scrolled=true;}
  if(hold>=0&&page==='home'&&!modal){let i=sceneHit(p.x,p.y);if(i>=0&&i!==hold){hold=i;holdAt=time;doSwing(i);}}pointer.lastX=p.x;pointer.lastY=p.y;});
 canvas.addEventListener('pointerup',e=>{const p=point(e),h=hitAt(p.x,p.y);if(pointer&&!pointer.scrolled&&Math.hypot(p.x-pointer.x,p.y-pointer.y)<18&&h&&h.id===pointer.id){h.action();}pointer=null;hold=-1;});
 canvas.addEventListener('pointercancel',()=>{pointer=null;hold=-1;});
 canvas.addEventListener('wheel',e=>{if(page!=='home'&&!modal){e.preventDefault();scroll=Math.max(0,Math.min(maxScroll,scroll+e.deltaY*.5));}},{passive:false});
-canvas.addEventListener('keydown',e=>{if(e.key==='Tab'||e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();focused=(focused+(e.shiftKey||e.key==='ArrowLeft'?-1:1)+hits.length)%Math.max(1,hits.length);}else if(e.key==='Enter'){e.preventDefault();if(focused>=0&&hits[focused])hits[focused].action();}else if(e.code==='Space'){e.preventDefault();if(intro)start();else if(!modal&&page==='home')doSwing(0);}else if(e.key==='Escape'){modal=null;paused=false;page='home';}});
+canvas.addEventListener('keydown',e=>{if(lockBlocked){if(e.key==='Enter'&&hits[0])hits[0].action();e.preventDefault();return;}if(e.key==='Tab'||e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();focused=(focused+(e.shiftKey||e.key==='ArrowLeft'?-1:1)+hits.length)%Math.max(1,hits.length);}else if(e.key==='Enter'){e.preventDefault();if(focused>=0&&hits[focused])hits[focused].action();}else if(e.code==='Space'){e.preventDefault();if(intro)start();else if(!modal&&page==='home')doSwing(0);}else if(e.key==='Escape'){modal=null;paused=false;page='home';}});
 window.addEventListener('blur',()=>{hold=-1;pointer=null;});
-document.addEventListener('visibilitychange',()=>{hold=-1;if(document.hidden){save();audio?.ctx?.suspend().catch(()=>{});}else{let n=town.offline((Date.now()-town.s.lastSeen)/1000);town.s.lastSeen=Date.now();if(n>0&&!intro)modal={kind:'offline',amount:n};town.petAt=time+500;town.petFlight=null;audio?.resume();save();}});
-window.addEventListener('pagehide',save);
+document.addEventListener('visibilitychange',()=>{hold=-1;frameLast=0;if(document.hidden){if(!lockBlocked)save();releaseLock();audio?.ctx?.suspend().catch(()=>{});}else{let stored=null;try{stored=localStorage.getItem(STORE_KEY);}catch(e){}if(lockBlocked||storageOK&&stored!==lastOwnSave||!acquireLock()){lockBlocked=true;pointer=null;hold=-1;return;}lockBlocked=false;let n=paused?0:town.offline((Date.now()-town.s.lastSeen)/1000);town.s.lastSeen=Date.now();if(n>0&&!intro)modal={kind:'offline',amount:n};town.petAt=time+500;town.petFlight=null;audio?.resume();save();}});
+window.addEventListener('storage',e=>{if(e.key===LOCK_KEY&&e.newValue){try{if(JSON.parse(e.newValue).owner!==TAB_ID){lockOwned=false;lockBlocked=true;pointer=null;hold=-1;}}catch(e){}}if(e.key===STORE_KEY&&lockOwned&&e.newValue!==lastOwnSave){lockOwned=false;lockBlocked=true;pointer=null;hold=-1;}});
+window.addEventListener('pagehide',()=>{if(!lockBlocked)save();releaseLock();});
 
 
 function background(){cx.fillStyle='#29422c';cx.fillRect(0,0,W,H);if(artReady){const s=Math.max(W/art.width,H/art.height);cx.drawImage(art,(W-art.width*s)/2,(H-art.height*s)/2,art.width*s,art.height*s);}else{cx.fillStyle=grad(0,H,'#a9c888','#e9c16d');cx.fillRect(0,0,W,H);ellipse(195,H*.65,220,H*.34,'#e9c47a');for(let i=0;i<8;i++)ellipse(i*65-20,H*.2,60,90,'#638e49');}cx.fillStyle=grad(0,180,'#3b552638','#ffffff00');cx.fillRect(0,0,W,180);}
@@ -254,7 +263,7 @@ function introScreen(){background();cx.fillStyle=grad(0,H,'#34462111','#223a2977
 function modalScreen(){if(!modal)return;hits=[];scrollArea=null;cx.fillStyle='#304128aa';cx.fillRect(0,0,W,H);let kind=modal.kind,h=kind==='settings'?482:kind==='help'?490:kind==='victory'?445:kind==='reset'?305:420,x=22,y=(H-h)/2,w=346;panel(x,y,w,h);
  const close=()=>{modal=null;paused=false;hold=-1;};
  if(kind==='upgrade'){text('新的好运，解锁！',195,y+31,13,'#a58243','center');if(modal.icon==='pet')squirrel(202,y+143,1.55,time*.006,town.s.pet);else{ellipse(195,y+140,64,24,'#d8bb7833');icon(modal.icon,195,y+119,93);for(let i=0;i<4;i++)star(135+i*41,y+76+(i%2)*73,5,'#e8ba4f');}text(modal.title,195,y+208,24,C.ink,'center',900);wrap(modal.desc,195,y+248,298,13,'#937140',25,'center');button('upgradeOK','马上试试！',49,y+h-75,292,51,()=>{close();switchPage('home');},{green:true,size:18});}
- else if(kind==='treasure'){text('找到宝箱啦！',195,y+38,28,C.ink,'center',900);coin(195,y+139,61,modal.type);star(115,y+101,10,'#e5b542');star(282,y+148,8,'#e5b542');text(TYPES[modal.type].name+' · 收益 ×'+TYPES[modal.type].value,195,y+231,20,C.ink,'center');text('另获幸运铜币 +1、位置 +4',195,y+264,13,'#95743f','center',600);text('宝箱金币 +'+modal.amount,195,y+291,16,'#759140','center');button('treasureOK','收下这份好运',49,y+h-74,292,50,()=>{let amount=modal.amount;close();page='home';for(let i=0;i<12;i++)flyCoin(195,H*.5,amount/12,i*.035);},{green:true,size:17});}
+ else if(kind==='treasure'){text('找到宝箱啦！',195,y+31,25,C.ink,'center',900);wrap(modal.story||'森林深处，又有一段旧时光被栗栗找到了。',195,y+62,292,12,'#8a6b3d',18,'center');coin(195,y+142,48,modal.type);star(120,y+128,8,'#e5b542');star(270,y+150,7,'#e5b542');text(TYPES[modal.type].name+' · 收益 ×'+TYPES[modal.type].value,195,y+201,17,C.ink,'center');text('宝箱金币 +'+modal.amount,195,y+233,16,'#759140','center');text('基础奖励 +'+modal.baseBonus+' · 幸运铜币 +1 · 位置 +4',195,y+261,10,'#95743f','center',600);if(modal.surprise)text('栗栗翻出额外金币 +'+modal.surprise,195,y+284,12,'#a87725','center',800);button('treasureOK','收下这份好运',49,y+h-74,292,50,()=>{let amount=modal.amount;close();page='home';for(let i=0;i<12;i++)flyCoin(195,H*.5,amount/12,i*.035);},{green:true,size:17});}
  else if(kind==='offline'){text('栗栗替你守着小镇',195,y+38,24,C.ink,'center',900);squirrel(202,y+161,1.5,time*.004,town.s.pet);text('你离开的时候，它赚到了',195,y+238,13,'#987342','center');text('+'+fmt(modal.amount),195,y+279,35,'#9a701f','center',900);text('离线按 50% 效率，最多累计 2 小时',195,y+310,10,'#aa8b52','center',500);button('offlineOK','接住这一袋金币',49,y+h-69,292,46,()=>{let amt=modal.amount;close();for(let i=0;i<15;i++)flyCoin(195,H*.5,amt/15,i*.025);sfx('unlock');},{green:true});}
  else if(kind==='victory'){text('第一章 · 圆满完成',195,y+34,14,'#9a7a3c','center');icon('clock',195,y+117,96);text('听，小镇醒来了。',195,y+209,27,C.ink,'center',900);wrap('一枚硬币、一把小铲子，\n还有一路陪着你的栗栗。\n你们找回了一个会叮当作响的家。',195,y+255,302,13,'#8f703d',24,'center');text('累计财富 '+fmt(town.s.total)+' · 栗栗贡献 '+fmt(town.s.petGold),195,y+337,11,'#75913e','center');button('victoryOK','继续陪栗栗寻宝',49,y+h-71,292,48,close,{green:true});}
  else if(kind==='settings'){text('小镇的休息时光',195,y+35,24,C.ink,'center',900);[['sound','金币音效'],['music','林间旋律'],['haptic','轻轻振动']].forEach(([key,label],i)=>{let yy=y+84+i*57;text(label,49,yy+20,15,C.ink);button('toggle-'+key,town.s[key]?'开启':'关闭',264,yy,74,37,()=>{town.s[key]=!town.s[key];save();},{green:town.s[key],size:12});});
@@ -263,13 +272,14 @@ function modalScreen(){if(!modal)return;hits=[];scrollArea=null;cx.fillStyle='#3
  else if(kind==='reset'){text('重新翻开这段故事？',195,y+43,23,C.ink,'center');wrap('会清除这座小镇的金币、伙伴与装备。\n当前这份进度将无法恢复。',195,y+100,285,13,'#96723f',26,'center');button('confirmReset','清除进度，重新开始',49,y+174,292,46,()=>{town=new Town();time=0;displayGold=0;flipTimes.fill(-1e5);particles=[];flying=[];floaters=[];ripples=[];swings=[];petVisual={x:72,y:570,fromX:72,fromY:570,toX:72,toY:570,start:0,end:1};page='home';intro=true;started=false;paused=false;modal=null;offlineGold=0;save();},{size:15});button('cancelReset','保留我的小镇',49,y+237,292,40,()=>{modal={kind:'settings'};},{green:true});}
  else if(kind==='help'){text('叮当声里的小秘密',195,y+36,23,C.ink,'center');const tips=[['翻币','点一下，或按住滑过硬币。亮起来后才能再翻。'],['小铲子','一次翻最近 3 枚。买到后，去伙伴页招募栗栗。'],['小松鼠','每次只帮你翻 1 枚。升级会跑得更快。'],['宽铲','整排翻币，并解锁金叶旋风：全庭院收益 ×2。'],['金币雨','连翻 24 枚后，你和栗栗的收益都翻倍。'],['藏宝地','在装备 → 探索购买，回到庭院挖 5 铲。']];tips.forEach(([a,b],i)=>{const yy=y+85+i*53;text(a,49,yy,13,'#748a3f');wrap(b,106,yy-2,226,11,'#8b6c3e',17);});text('电脑也能玩：空格翻币，Tab 选按钮，回车确认。',195,y+h-88,9,'#a48751','center',500);button('helpOK','我知道啦',49,y+h-64,292,42,close,{green:true});}
 }
-function frame(stamp){let realDT=frameLast?Math.min(.08,(stamp-frameLast)/1000):0;frameLast=stamp;let active=started&&!intro&&!paused&&!document.hidden;
- if(active){time+=realDT*1000;town.s.seconds+=realDT;if(hold>=0&&time-holdAt>170){doSwing(hold);holdAt=time;}const events=town.tick(time);for(let e of events){if(e.kind==='petGo'){const p=pos(e.i);petVisual.fromX=petVisual.x;petVisual.fromY=petVisual.y;petVisual.toX=p.x+18;petVisual.toY=p.y-20;petVisual.start=time;petVisual.end=town.petFlight.arrive;}else feedback([e.hit]);}if(time-lastSave>10000){save();lastSave=time;}}
- if(!started||intro)time+=realDT*1000;
- displayGold+=Math.min(1,realDT*10)*(town.s.gold-displayGold);if(Math.abs(displayGold-town.s.gold)<.8)displayGold=town.s.gold;bankPulse=Math.max(0,bankPulse-realDT*3);screenShake=Math.max(0,screenShake-realDT*15);
+function frame(stamp){let wallDT=frameLast?Math.max(0,(stamp-frameLast)/1000):0,visualDT=Math.min(.08,wallDT);frameLast=stamp;let active=started&&!intro&&!paused&&!document.hidden&&!lockBlocked;
+ if(active){time+=wallDT*1000;town.s.seconds+=wallDT;if(hold>=0&&time-holdAt>170){doSwing(hold);holdAt=time;}const events=town.tick(time);for(let e of events){if(e.kind==='petGo'){const p=pos(e.i);petVisual.fromX=petVisual.x;petVisual.fromY=petVisual.y;petVisual.toX=p.x+18;petVisual.toY=p.y-20;petVisual.start=time;petVisual.end=town.petFlight.arrive;}else feedback([e.hit]);}if(time-lastSave>10000){save();lastSave=time;}}
+ if(!started||intro)time+=visualDT*1000;
+ displayGold+=Math.min(1,visualDT*10)*(town.s.gold-displayGold);if(Math.abs(displayGold-town.s.gold)<.8)displayGold=town.s.gold;bankPulse=Math.max(0,bankPulse-visualDT*3);screenShake=Math.max(0,screenShake-visualDT*15);
  cx.setTransform(dpr,0,0,dpr,0,0);cx.fillStyle='#243a2a';cx.fillRect(0,0,screenW,screenH);cx.translate(ox,oy);cx.scale(scale,scale);cx.save();rr(0,0,W,H,0);cx.clip();hits=[];scrollArea=null;
- if(intro){introScreen();}else{background();if(page==='home'){cx.save();if(screenShake)cx.translate((Math.random()-.5)*screenShake,(Math.random()-.5)*screenShake);home();cx.restore();}else if(page==='tools')shop();else if(page==='pet')petPage();else if(page==='album')album();else if(page==='journal')journal();effects(active?realDT:0);header();quest();nav();modalScreen();}
+ if(intro){introScreen();}else{background();if(page==='home'){cx.save();if(screenShake)cx.translate((Math.random()-.5)*screenShake,(Math.random()-.5)*screenShake);home();cx.restore();}else if(page==='tools')shop();else if(page==='pet')petPage();else if(page==='album')album();else if(page==='journal')journal();effects(active?visualDT:0);header();quest();nav();modalScreen();}
  if(toastState&&time<toastState.until&&!modal&&!intro){let yy=H-295;box(30,yy,330,43,'#435a32ef','#e6d18f',16,2);wrap(toastState.msg,195,yy+14,300,11,'#fff0ba',15,'center');}
+ if(lockBlocked)lockScreen();
  if(focused>=0&&hits[focused]){let f=hits[focused];rr(f.x-3,f.y-3,f.w+6,f.h+6,14);cx.strokeStyle='#fff7b4';cx.lineWidth=3;cx.stroke();}
  cx.restore();requestAnimationFrame(frame);
 }
