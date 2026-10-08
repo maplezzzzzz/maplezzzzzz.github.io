@@ -260,9 +260,9 @@ TYPES.copper={name:'幸运铜币',value:1,zone:0,rarity:0,need:0};
 const GEAR_NAMES={shovel:'爷爷的小铲',wide:'黄铜宽铲',magnet:'磁力手套',rake:'幸运耙',watering:'浇金壶',drill:'地脉钻',bell:'共鸣铃',case:'星光提箱'};
 const GEAR_IDS=Object.keys(GEAR_NAMES),CLOCK_STEPS=['清理塔基','接回齿轮','敲响记忆之钟'];
 const BASE_PRICES={shovel:55,wide:4200,magnet:180000};
-const PET_PRICES=[180,600,2400,10000,42000,180000,850000,4200000,22000000,125000000,750000000,4500000000,28000000000,180000000000,1500000000000];
-ZONES.forEach((z,i)=>z.cost=[0,18000,240000,4200000,85000000,2100000000,65000000000][i]);
-RELICS.forEach((r,i)=>r.cost=[16000,120000,1200000,22000000,420000000][i]);
+const PET_PRICES=[180,600,2400,10000,42000,180000,850000,3600000,15000000,65000000,280000000,1200000000,5400000000,24000000000,120000000000];
+ZONES.forEach((z,i)=>z.cost=[0,18000,240000,3600000,36000000,360000000,2400000000][i]);
+RELICS.forEach((r,i)=>r.cost=[16000,120000,1200000,22000000,180000000][i]);
 RELICS[0].desc='向前扫出一片扇形。技能全庭院连翻 ×3。';
 RELICS[3].desc='波纹翻动周围硬币。技能召来 10 秒金币雨。';
 function growthOf(g){
@@ -290,7 +290,7 @@ Town.prototype.gearRank=function(id=this.gearId()){return id==='hand'?1:growthOf
 Town.prototype.distinct=function(){return Object.keys(growthOf(this).collection).filter(k=>growthOf(this).collection[k]>0).length;};
 Town.prototype.coinCost=function(){return Math.round(12*Math.pow(1.55,this.s.coins.length-1));};
 Town.prototype.petCost=function(){return this.s.pet<15?PET_PRICES[this.s.pet]:Infinity;};
-Town.prototype.powerCost=function(){return this.s.power<24?Math.min(1e14,Math.round(180*Math.pow(3.8,this.s.power-1))):Infinity;};
+Town.prototype.powerCost=function(){return this.s.power<24?Math.min(1e14,Math.round(180*Math.pow(2.35,this.s.power-1))):Infinity;};
 Town.prototype.landCost=function(){return [1200,9000,140000][this.s.land]||Infinity;};
 Town.prototype.clockCost=function(){return [5000,14000,45000][growthOf(this).clockStage]||Infinity;};
 Town.prototype.requirement=function(id){
@@ -321,7 +321,7 @@ Town.prototype.buy=function(id){
  return false;
 };
 Town.prototype.buyRelic=function(id){const w=worldOf(this),r=RELICS.find(x=>x.id===id);if(!r||w.run||this.requirement(id)||!this.pay(r.cost))return false;w.owned.push(id);growthOf(this).ranks[id]=1;w.equipped=id;this.skillAt=0;return true;};
-Town.prototype.gearCost=function(id){const rank=growthOf(this).ranks[id],base=BASE_PRICES[id]||RELICS.find(r=>r.id===id)?.cost||55;return {gold:Math.min(1e14,Math.round(base*3.2*Math.pow(4.3,rank-1))),gems:rank>=2?Math.ceil(rank*rank*1.5):0};};
+Town.prototype.gearCost=function(id){const rank=growthOf(this).ranks[id],base=BASE_PRICES[id]||RELICS.find(r=>r.id===id)?.cost||55;return {gold:Math.min(1e14,Math.round(base*3.2*Math.pow(2.2,rank-1))),gems:rank>=2?Math.ceil(rank*rank*1.5):0};};
 Town.prototype.gearRequirement=function(id){
  const p=growthOf(this),n=p.ranks[id]+1,w=worldOf(this),z=Math.min(6,Math.max(0,n-2));
  return !p.ranks[id]?'先获得这件工具':n>8?'熟练度已达 8 级':w.run?'远征结束后再升级':w.unlocked<z?'抵达 '+ZONES[z].name:n>=4&&w.wins<(n-3)*8?'完成 '+((n-3)*8)+' 次远征':n>=6&&this.distinct()<n*2?'收集 '+(n*2)+' 种金币':'';
