@@ -21,6 +21,12 @@ for n in range(4):put('water'+str(n),water,(n*16,0,16,16))
 biom=get('Objects/Basic_Grass_Biom_things.png')
 for key,rect in {'treeSlim':(0,0,16,32),'tree':(16,0,32,32),'treeFruit':(48,0,32,32),'bush':(16,48,16,16),'bushFruit':(0,48,16,16),'rock':(128,16,16,16),'flowerPink':(80,0,16,16),'flowerPurple':(96,0,16,16),'flowerBlue':(112,0,16,16),'sunflower':(128,32,16,32),'wood':(64,32,16,16),'mushroom':(48,48,16,16),'lily':(96,64,16,16),'grassTuft':(48,64,16,16)}.items():put(key,biom,rect)
 house=get('Objects/Free_Chicken_House.png');put('cottage',house)
+mini=Image.new('RGBA',(32,32));g=grass.crop((16,16,32,32))
+for yy in [0,16]:
+ for xx in [0,16]:mini.paste(g,(xx,yy))
+road=ImageDraw.Draw(mini);road.rectangle((13,0,17,31),fill='#ead0a4');road.rectangle((0,18,31,22),fill='#ead0a4')
+t=biom.crop((16,0,48,32)).resize((16,16),Image.Resampling.NEAREST);mini.paste(t,(17,1),t)
+h=house.resize((16,16),Image.Resampling.NEAREST);mini.paste(h,(0,12),h);put('mapIcon',mini)
 fence=get('Tilesets/Fences.png')
 for n,rect in enumerate([(16,0,16,16),(32,0,16,16),(0,0,16,16),(16,16,16,16),(32,16,16,16)]):put('fence'+str(n),fence,rect)
 tools=get('Objects/Basic_tools_and_materials.png')
@@ -34,7 +40,22 @@ for row in range(4):
 act=get('Characters/basic-character-actions.png')
 for row in range(12):
  for col in range(2):put('action'+str(row)+'_'+str(col),act,(col*48,row*48,48,48))
+friend=char.crop((8,8,40,40));put('friend0',friend)
+orange=friend.copy()
+for yy in range(orange.height):
+ for xx in range(orange.width):
+  r,g,b,a=orange.getpixel((xx,yy))
+  if a and r>160 and g>160 and b>90:orange.putpixel((xx,yy),(242,188,119,a))
+  elif a:orange.putpixel((xx,yy),(143,102,108,a))
+put('friend1',orange)
 chicken=get('Characters/free-chicken-sprites.png')
+night=chicken.crop((0,0,16,16))
+for yy in range(night.height):
+ for xx in range(night.width):
+  r,g,b,a=night.getpixel((xx,yy))
+  if a and r>170 and g>150:night.putpixel((xx,yy),(195,209,216,a))
+  elif a and r>g:night.putpixel((xx,yy),(94,118,130,a))
+put('friend2',night)
 for row in range(2):
  for col in range(4):put('chicken'+str(row)+str(col),chicken,(col*16,row*16,16,16))
 cow=get('Characters/free-cow-sprites.png')
