@@ -27,6 +27,7 @@ tools=get('Objects/Basic_tools_and_materials.png')
 for key,rect in {'watering':(0,0,16,16),'shovel':(16,0,16,16),'pick':(32,0,16,16),'pail':(0,16,16,16),'axe':(16,16,16,16),'seedBag':(32,16,16,16)}.items():put(key,tools,rect)
 plants=get('Objects/Basic_Plants.png')
 for key,rect in {'seedling':(16,0,16,16),'wheat':(32,0,16,16),'corn':(48,0,16,16),'eggplant':(80,0,16,16),'carrot':(80,16,16,16),'seed':(0,0,16,16)}.items():put(key,plants,rect)
+furniture=get('Objects/Basic_Furniture.png');put('paper',furniture,(0,0,16,16))
 char=get('Characters/basic-character-spritesheet.png')
 for row in range(4):
  for col in range(4):put('hero'+str(row)+str(col),char,(col*48+8,row*48+8,32,32))
@@ -39,10 +40,10 @@ for row in range(2):
 cow=get('Characters/free-cow-sprites.png')
 for row in range(2):
  for col in range(3):put('cow'+str(row)+str(col),cow,(col*32,row*32,32,32))
-nest=get('Characters/egg-and-nest.png');put('nest',nest,(0,0,16,16))
+nest=get('Characters/egg-and-nest.png');put('nest',nest,(48,0,16,16))
 ch=get('Objects/Chest.png')
 for col in range(3):put('sproutChest'+str(col),ch,(col*48,0,48,48))
-bridge=get('Objects/Wood_Bridge.png');put('bridge',bridge)
+bridge=get('Objects/Wood_Bridge.png');put('bridge',bridge,(32,0,48,32))
 url='https://raw.githubusercontent.com/linuskar/DATX11-DIT561-Bachelor-Project-Group-48/cc41c8474e12fff716ef0af9770cd1ed702eb187/assets/coins-chests-etc-2-0.png'
 data=urllib.request.urlopen(url,timeout=40).read();money=Image.open(io.BytesIO(data)).convert('RGBA')
 sources.append({'author':'greatdocbrown','license':'CC0','url':url,'sha256':hashlib.sha256(data).hexdigest()})
@@ -52,7 +53,7 @@ for row in range(4):
 for row in range(4):
  for n in range(6):put('gem'+str(row)+'_'+str(n),money,(80+n*16,368+row*16,16,16))
 for n in range(4):put('chest'+str(n),money,(448+n*32,672,32,16))
-for key,rect in {'star':(64,192,16,16),'heart':(320,192,16,16),'bag':(464,480,16,32),'key':(464,384,32,16),'book':(512,544,16,16),'lock':(720,384,16,16),'potion':(624,192,16,32),'note':(544,16,48,16)}.items():put(key,money,rect)
+for key,rect in {'star':(64,192,16,16),'heart':(320,192,16,16),'bag':(464,480,16,16),'key':(464,384,32,16),'book':(512,544,16,16),'lock':(720,384,16,16),'potion':(624,192,16,32),'note':(544,16,48,16)}.items():put(key,money,rect)
 cols=12;cell=84;sheet=Image.new('RGBA',(cols*cell,((len(ims)+cols-1)//cols)*cell))
 preview=Image.new('RGB',(cols*96,((len(ims)+cols-1)//cols)*96),'#eff0db');draw=ImageDraw.Draw(preview)
 for n,(key,im) in enumerate(ims.items()):
