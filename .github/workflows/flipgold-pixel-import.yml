@@ -1,0 +1,18 @@
+name: Package Sprout Lands game art
+on:
+  push:
+    branches: [flipgold-sprout-v5]
+    paths: [.github/flipgold-pixel-import.py, .github/workflows/flipgold-pixel-import.yml]
+permissions:
+  contents: write
+jobs:
+  art:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install Pillow
+      - name: Package selected licensed game frames
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/flipgold-pixel-import.py
