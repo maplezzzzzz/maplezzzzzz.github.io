@@ -1,0 +1,26 @@
+name: Render Flipgold world previews
+on:
+  push:
+    branches: [flipgold-world-v4]
+    paths: [flipgold/index.html, .github/flipgold-render.cjs, .github/workflows/flipgold-render.yml]
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NODE_PATH: /tmp/flipgold-art/node_modules
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install --prefix /tmp/flipgold-art --no-save playwright
+      - run: /tmp/flipgold-art/node_modules/.bin/playwright install --with-deps chromium
+      - name: Render actual game artwork on mobile screens
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/flipgold-render-http.log 2>&1 &
+          node .github/flipgold-render.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flipgold-world-preview-images
+          path: world-previews/*.jpg
