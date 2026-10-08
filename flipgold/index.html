@@ -1344,7 +1344,7 @@ function fragmentSource(id){
 }
 album=function(){
  const {y,h}=sheet('金币修复与收藏','已铸成 '+town.distinct()+'/31 种 · 碎片凑齐后可修复'),top=y+76,view=h-93,p=growthOf(town),keys=['copper',...COIN_BOOK.map(c=>c[0])];
- scrollBody(top,view,Math.ceil(keys.length/3)*133,off=>keys.forEach((id,n)=>{const xx=29+(n%3)*113,yy=off+Math.floor(n/3)*133;if(yy+127<top||yy>top+view)return;const r=TYPES[id],found=(p.collection[id]||0)>0,fr=p.fragments[id]||0;panel(xx,yy,106,125);cx.save();cx.globalAlpha=found?1:fr?.67:.25;coin(xx+53,yy+41,27,id);cx.restore();text(found||fr?r.name:'未知纪念币',xx+53,yy+83,10,C.ink,'center');text(found?'已拥有 '+p.collection[id]+' 枚':fr?'碎片 '+fr+'/'+r.need:ZONES[r.zone].name,xx+53,yy+105,9,fr>=r.need&&r.need?'#64875d':'#7d846e','center');if(yy>=top&&yy+125<=top+view)addHit('codex-'+id,xx,yy,106,125,()=>{modal={kind:'coinDetail',id,at:uiTime};});}));
+ scrollBody(top,view,Math.ceil(keys.length/3)*133,off=>keys.forEach((id,n)=>{const xx=29+(n%3)*113,yy=off+Math.floor(n/3)*133;if(yy+127<top||yy>top+view)return;const r=TYPES[id],found=(p.collection[id]||0)>0,fr=p.fragments[id]||0;panel(xx,yy,106,125);cx.save();cx.globalAlpha=found?1:fr?.67:.25;coin(xx+53,yy+41,27,id);cx.restore();text(found||fr?r.name:'未知纪念币',xx+53,yy+83,10,C.ink,'center');text(found?'已拥有 '+p.collection[id]+' 枚':fr?'碎片 '+fr+'/'+r.need:ZONES[r.zone].name,xx+53,yy+105,9,fr>=r.need&&r.need?'#64875d':'#7d846e','center');if(yy+125>top&&yy<top+view)addHit('codex-'+id,xx,Math.max(yy,top),106,Math.min(yy+125,top+view)-Math.max(yy,top),()=>{modal={kind:'coinDetail',id,at:uiTime};});}));
 };
 function mintSpecial(id){if(!control())return;const out=town.mintCoin(id);if(!out){toast('还需要更多碎片：'+fragmentSource(id));return;}save();sfx('win');page='home';coinBorn[out.i]=time;burst(pos(out.i).x,pos(out.i).y,35);modal={kind:'newCoin',id,first:out.first,at:uiTime};}
 const v6Feedback=feedback;
@@ -1368,7 +1368,7 @@ modalScreen=function(){
   if(kind==='coinDetail'){
    wrap(fragmentSource(id),195,y+252,300,12,'#75836b',21,'center');
    text('已拥有 '+count+' 枚 · 在庭院 '+town.s.coins.filter(k=>k===id).length+' 枚',195,y+309,11,'#78846d','center');
-   if(id!=='copper'){meter(46,y+341,299,8,fr/r.need,'green');text('修复碎片 '+fr+'/'+r.need,195,y+368,13,'#68836a','center');button('mint-'+id,fr>=r.need?'修复这枚金币':'继续寻找碎片',45,y+h-111,144,38,()=>mintSpecial(id),{green:fr>=r.need,size:11});button('equipCoin','放入庭院',201,y+h-111,144,38,()=>{if(town.equipCoin(id)){save();modal=null;page='home';sfx('unlock');}else toast('没有备用金币，或正在远征中');},{green:count>town.s.coins.filter(k=>k===id).length,size:11});}
+   if(id!=='copper'){meter(46,y+341,299,8,fr/r.need,'green');text('修复碎片 '+fr+'/'+r.need,195,y+368,13,'#68836a','center');button('mint-'+id,fr>=r.need?'修复这枚金币':'继续寻找碎片',45,y+h-111,144,38,()=>fr>=r.need?mintSpecial(id):seekFragments(id),{green:fr>=r.need,size:11});button('equipCoin','放入庭院',201,y+h-111,144,38,()=>{if(town.equipCoin(id)){save();modal=null;page='home';sfx('unlock');}else toast('没有备用金币，或正在远征中');},{green:count>town.s.coins.filter(k=>k===id).length,enabled:count>town.s.coins.filter(k=>k===id).length,size:11});}
    button('coinDetailOK','回到图鉴',45,y+h-57,300,37,()=>{modal=null;},{size:13});
   }else{wrap('已放入庭院，可以亲手翻动它。\n庭院满时，会换下收益较低的一枚。\n换下的金币仍保存在收藏中。\n每次修复，都让庭院多一份故事。',195,y+266,296,13,'#6d846d',24,'center');button('newCoinOK','翻翻这枚新金币',45,y+h-66,300,43,()=>{modal=null;page='home';},{green:true,size:14});}
  }
@@ -1413,6 +1413,17 @@ modalScreen=function(){
  button('helpPlan','看看我当前的下一步',45,y+h-96,300,35,openRoadmap,{green:true,size:12});
  button('helpOK','回到庭院',45,y+h-50,300,34,closeModal,{size:13});
 };
+
+
+function seekFragments(id){
+ const r=TYPES[id];modal=null;
+ if(id==='clock'&&!town.s.clock){shopTab='explore';switchPage('tools');return;}
+ if(id==='unity'){openWorld('routes');toast('新一轮旅行后收集 24 种，继续免费远征找碎片。');return;}
+ if(r.zone>worldOf(town).unlocked){openWorld('areas');return;}
+ if(worldOf(town).run){openWorld('routes');return;}
+ if(r.zone!==worldOf(town).zone){travelZone(r.zone);return;}
+ openWorld('routes');toast(fragmentSource(id));
+}
 
 requestAnimationFrame(frame);
 </script></body></html>
