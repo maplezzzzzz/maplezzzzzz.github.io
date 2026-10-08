@@ -9,7 +9,7 @@ const emit=name=>{const b=fs.readFileSync('world-previews/'+name+'.jpg').toStrin
  const snap=async n=>{await p.waitForTimeout(180);await p.screenshot({path:'world-previews/'+n+'.jpg',type:'jpeg',quality:76});emit(n);};
  await snap('intro');
  await p.evaluate(()=>{start();});await p.waitForTimeout(100);
- await snap('first-garden');
+ await p.evaluate(()=>{dialogue=null;dialogueQueue=[];});await snap('first-garden');
  await p.evaluate(()=>{town.s.coins=['copper','copper','clover','sun','royal','berry','river','crystal','frost','star'];town.s.tool=3;town.s.power=4;town.s.pet=3;town.s.land=3;town.s.clock=true;town.s.gold=500000;town.s.total=500000;town.s.play.charm='nest';town.s.play.nuts=15;const w=worldOf(town);w.unlocked=4;w.zone=3;w.gems=24;w.refine=3;w.clears=[8,8,8,3,0,0,0];w.owned=['rake','watering','drill'];w.equipped='drill';w.companions=['rabbit','fox'];w.companion='rabbit';dialogue=null;dialogueQueue=[];modal=null;cinema=null;displayGold=town.s.gold;town.shiny={i:7,start:time,until:time+5000};paused=true;});
  await snap('crystal-garden');
  await p.evaluate(()=>{page='map';mapTab='areas';scroll=0;});await snap('world-map');
@@ -17,7 +17,12 @@ const emit=name=>{const b=fs.readFileSync('world-previews/'+name+'.jpg').toStrin
  await p.evaluate(()=>{mapTab='forge';scroll=0;});await snap('refinement');
  await p.evaluate(()=>{page='tools';shopTab='relics';scroll=0;});await snap('new-equipment');
  await p.evaluate(()=>{modal={kind:'companions',at:uiTime};});await snap('companions');
+ await p.evaluate(()=>{modal={kind:'credits',at:uiTime};});await snap('credits');
  await p.evaluate(()=>{modal={kind:'travelStory',chapter:10,at:uiTime};});await snap('chapter');
+ await p.evaluate(()=>{modal=null;page='home';worldOf(town).zone=1;});await snap('orchard');
+ await p.evaluate(()=>{worldOf(town).zone=2;});await snap('river');
+ await p.evaluate(()=>{worldOf(town).zone=4;});await snap('snow');
+ await p.evaluate(()=>{worldOf(town).zone=3;});
  await p.evaluate(()=>{modal=null;page='home';paused=false;town.startRoute();dialogue=null;});await snap('active-route');
  await p.setViewportSize({width:360,height:640});await snap('phone360');
  await p.evaluate(()=>{page='map';mapTab='forge';scroll=maxScroll;});await snap('phone-forge');
