@@ -1,0 +1,23 @@
+name: Import Flipgold licensed artwork
+on:
+  push:
+    branches: [flipgold-world-v4]
+    paths: [.github/workflows/flipgold-import.yml, .github/flipgold-import.py, .github/flipgold-asset-sources.json]
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install Pillow
+      - name: Download, pack and commit licensed sprites
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 .github/flipgold-import.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flipgold-art-contact-sheets
+          path: asset-previews/*.jpg
