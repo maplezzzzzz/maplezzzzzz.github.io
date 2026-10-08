@@ -53,12 +53,12 @@ for row in range(4):
  for n in range(6):put('gem'+str(row)+'_'+str(n),money,(80+n*16,368+row*16,16,16))
 for n in range(4):put('chest'+str(n),money,(448+n*32,672,32,16))
 for key,rect in {'star':(64,192,16,16),'heart':(320,192,16,16),'bag':(464,480,16,32),'key':(464,384,32,16),'book':(512,544,16,16),'lock':(720,384,16,16),'potion':(624,192,16,32),'note':(544,16,48,16)}.items():put(key,money,rect)
-cols=12;cell=52;sheet=Image.new('RGBA',(cols*cell,((len(ims)+cols-1)//cols)*cell))
+cols=12;cell=84;sheet=Image.new('RGBA',(cols*cell,((len(ims)+cols-1)//cols)*cell))
 preview=Image.new('RGB',(cols*96,((len(ims)+cols-1)//cols)*96),'#eff0db');draw=ImageDraw.Draw(preview)
 for n,(key,im) in enumerate(ims.items()):
  x=n%cols*cell+2;y=n//cols*cell+2;sheet.paste(im,(x,y))
  frames['pixel/'+key]={'atlas':'sprout-v5','x':x,'y':y,'w':im.width,'h':im.height}
- k=min(4,72//max(im.size));thumb=im.resize((im.width*k,im.height*k),Image.Resampling.NEAREST)
+ k=max(1,min(4,72//max(im.size)));thumb=im.resize((im.width*k,im.height*k),Image.Resampling.NEAREST)
  px=n%cols*96+(96-thumb.width)//2;py=n//cols*96+4;preview.paste(thumb,(px,py),thumb);draw.text((n%cols*96+3,n//cols*96+78),key,fill='#3f5d58')
 file=ROOT/'sprout-v5.png';sheet.save(file,optimize=True);outputs.append(file)
 file=ROOT/'sprout-v5.json';file.write_text(json.dumps({'version':5,'frames':frames,'sources':sources},ensure_ascii=False,separators=(',',':')));outputs.append(file)
